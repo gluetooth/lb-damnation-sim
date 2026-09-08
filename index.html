@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>DAMNATION 2026 - CLASHFINDER GAME</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-5461085-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'UA-5461085-1');
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo-wrap">
+            <img src="assets/img/damnation.webp" alt="Damnation">
+            <!--div class="logo-sub">See bands, buy pints, buy merch for points. Don't piss yourself.</div-->
+        </div>
+        <div class="day-flag" id="day-flag">Not started</div>
+    </header>
+
+    <div class="layout">
+        <div id="stage-wrap" class="panel">
+            <h2>BEC Arena<span class="rule"></span><span id="day-status"
+                    style="font-weight:400; letter-spacing:0; color:var(--paper-dim); font-size:11px;"></span></h2>
+
+            <div class="vs-hud">
+                <div class="vs-bar-block">
+                    <div class="vs-bar-label"><span>Energy</span><span id="energy-num">100</span></div>
+                    <div class="vs-bar-track">
+                        <div class="vs-bar-fill energy" id="energy-fill" style="width:100%"></div>
+                    </div>
+                    <div id="energy-badge" class="vs-sub"></div>
+                </div>
+                <div class="vs-clock">
+                    <div class="time" id="v-clock">—</div>
+                    <div class="left"><span id="v-left">—</span> left</div>
+                    <div class="vs-coins">🪙 <span id="v-coins">0</span></div>
+                </div>
+                <div class="vs-bar-block">
+                    <div class="vs-bar-label right"><span id="pee-num">0</span><span>Need a wee</span></div>
+                    <div class="vs-bar-track">
+                        <div class="vs-bar-fill pee right" id="pee-fill" style="width:0%"></div>
+                    </div>
+                    <div class="vs-sub right" id="pee-eta"></div>
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div id="field-wrap">
+                    <canvas id="field" width="700" height="700"></canvas>
+                </div>
+                <div class="key-col">
+                    <div id="stage-key"></div>
+                    <div class="controls-row">
+                        <div id="dpad" class="dpad-grid">
+                            <button class="u" data-dir="0,-1">▲</button>
+                            <button class="l" data-dir="-1,0">◀</button>
+                            <button class="c" disabled></button>
+                            <button class="r" data-dir="1,0">▶</button>
+                            <button class="d" data-dir="0,1">▼</button>
+                        </div>
+                        <div class="action-btns">
+                            <button class="act" id="btn-wait">Stand around (+4 min)</button>
+                            <button class="act ghost" id="btn-teleport" disabled>🙌 Crowd surf (0)</button>
+                            <button class="act ghost" id="btn-end">Call it a day</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="side-col">
+            <div class="panel" style="margin-bottom:14px;">
+                <h2>Your day<span class="rule"></span></h2>
+                <div class="stat-grid">
+                    <div>Score <b id="s-score" class="coin">0</b></div>
+                    <div>Steps <b id="s-steps">0</b></div>
+                    <div>Pints <b id="s-pints">0</b></div>
+                    <div>Bands seen <b id="s-bands">0</b></div>
+                    <div>Merch <b id="s-merch">0</b></div>
+                    <div>Secret <b id="s-secret">—</b></div>
+                </div>
+                <div id="log"></div>
+            </div>
+
+            <div class="panel" style="margin-bottom:14px;">
+                <h2>Don't miss today<span class="rule"></span></h2>
+                <div id="mustmiss"></div>
+            </div>
+
+            <div id="legend"></div>
+        </div>
+
+        <div class="panel" id="timeline-panel">
+            <h2>Lineup<span class="rule"></span><span id="score-badge">0 pts</span></h2>
+            <div id="status-bar">Getting ready…</div>
+            <div class="gantt-wrap">
+                <div class="gantt-inner" id="gantt-inner"></div>
+            </div>
+            <div class="gantt-legend">
+                <span><span class="swatch-box" style="background:rgba(242,236,227,.85)"></span>watched</span>
+                <span><span class="swatch-box must-demo"></span>must-not-miss</span>
+                <span><span class="swatch-box live-demo"></span>on now</span>
+                <span>│ line = current time</span>
+            </div>
+        </div>
+
+        <div id="video-panel">
+            <div class="video-frame-wrap">
+                <iframe id="video-frame" src="" title="Band video" frameborder="0" allow="autoplay; encrypted-media"
+                    allowfullscreen></iframe>
+                <div class="video-placeholder" id="video-placeholder">🎥<span>No video playing</span><span
+                        class="sub">Get to a stage during a set with a known video</span></div>
+            </div>
+            <div class="video-caption" id="video-caption">Nothing playing right now</div>
+        </div>
+    </div>
+
+    <!-- fixed floating D-pad, shown on mobile only (CSS controls visibility) -->
+    <div id="dpad-fixed" class="dpad-grid">
+        <button class="u" data-dir="0,-1">▲</button>
+        <button class="l" data-dir="-1,0">◀</button>
+        <button class="c" disabled></button>
+        <button class="r" data-dir="1,0">▶</button>
+        <button class="d" data-dir="0,1">▼</button>
+    </div>
+
+    <footer>Lineup is the real Damnation 2026 timetable, split across the two festival days. Venue layout, obstacles,
+        and your three must-not-miss acts are randomised every playthrough.</footer>
+
+    <!-- ONBOARDING OVERLAY -->
+    <div class="overlay" id="overlay-onboarding">
+        <div class="card" id="onb-card"></div>
+    </div>
+
+    <!-- END OVERLAY -->
+    <div class="overlay hidden" id="overlay-end">
+        <div class="card" id="end-card"></div>
+    </div>
+
+    <!-- END-OF-DAY CONFIRMATION -->
+    <div class="overlay hidden" id="overlay-confirm-end">
+        <div class="card" style="max-width:420px;">
+            <h2>Heading off?</h2>
+            <p>Are you sure you want to crowd surf to bed? There's still time left on the clock.</p>
+            <div class="cta-row">
+                <button class="act ghost" id="btn-confirm-end-cancel" style="flex:1;">Stay a bit longer</button>
+                <button class="act primary" id="btn-confirm-end-yes" style="flex:1;">Crowd surf to bed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CROWD SURF TELEPORT -->
+    <div class="overlay hidden" id="overlay-teleport">
+        <div class="card" style="max-width:420px;">
+            <h2>Crowd surf to...</h2>
+            <p>Pick a stage — you'll land right at the front, free of charge.</p>
+            <div id="teleport-stage-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <div class="cta-row"><button class="act ghost" id="btn-teleport-cancel" style="flex:1;">Never mind</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            "use strict";
+
+            /* ============================== REAL LINEUP DATA ============================== */
+            // Times in minutes-of-day (12:00 = 720). Split across the two real festival days.
+            const DAY_LINEUP = [
+                null, // 1-indexed
+                {
+                    label: "Saturday 7 November",
+                    short: "Saturday",
+                    stages: [
+                        {
+                            name: "Pins & Knuckles Stage", acts: [
+                                { name: "Holy Fawn", start: 750, end: 785 },
+                                { name: "Cabal", start: 820, end: 860 },
+                                { name: "Car Bomb", start: 900, end: 940 },
+                                { name: "eyehategod", start: 980, end: 1030 },
+                                { name: "Crowbar", start: 1075, end: 1125 },
+                                { name: "Health", start: 1170, end: 1220 },
+                                { name: "Carcass", start: 1275, end: 1325 },
+                                { name: "Cult of Luna", start: 1380, end: 1440 },
+                            ]
+                        },
+                        {
+                            name: "Holy Goat Brewing Stage", acts: [
+                                { name: "Fange", start: 720, end: 750 },
+                                { name: "Machukha", start: 785, end: 820 },
+                                { name: "Ultha", start: 860, end: 900 },
+                                { name: "Wormed", start: 940, end: 980 },
+                                { name: "Krallice", start: 1030, end: 1075 },
+                                { name: "Frontierer", start: 1125, end: 1170 },
+                                { name: "Gorerotted", start: 1220, end: 1275 },
+                                { name: "The Berzerker", start: 1325, end: 1380 },
+                            ]
+                        },
+                        {
+                            name: "Eyesore Merch Stage", acts: [
+                                { name: "Intercourse", start: 720, end: 750 },
+                                { name: "Coltaine", start: 785, end: 820 },
+                                { name: "Hundred Year Old Man", start: 860, end: 900 },
+                                { name: "The Moth Gatherer", start: 940, end: 980 },
+                                { name: "Rwake", start: 1030, end: 1075 },
+                                { name: "John Cxnnor", start: 1125, end: 1170 },
+                                { name: "MØL", start: 1220, end: 1275 },
+                                { name: "Pelican", start: 1325, end: 1380 },
+                            ]
+                        },
+                    ]
+                },
+                {
+                    label: "Sunday 8 November",
+                    short: "Sunday",
+                    stages: [
+                        {
+                            name: "Lou's Brews Stage", acts: [
+                                { name: "Hippotraktor", start: 720, end: 755 },
+                                { name: "LIK", start: 785, end: 825 },
+                                { name: "Worm", start: 855, end: 900 },
+                                { name: "Wolves in the Throne Room", start: 940, end: 980 },
+                                { name: "Walls of Jericho", start: 1025, end: 1070 },
+                                { name: "Triptykon", start: 1110, end: 1160 },
+                                { name: "Igorrr", start: 1210, end: 1260 },
+                                { name: "Satyricon", start: 1320, end: 1380 },
+                            ]
+                        },
+                        {
+                            name: "Cult Never Dies Stage", acts: [
+                                { name: "Mastiff", start: 755, end: 785 },
+                                { name: "Medulla Nocte", start: 825, end: 855 },
+                                { name: "Final Dose", start: 900, end: 940 },
+                                { name: "Groza", start: 980, end: 1025 },
+                                { name: "Dodsrit", start: 1070, end: 1110 },
+                                { name: "Weekend Nachos", start: 1160, end: 1210 },
+                                { name: "Benediction", start: 1260, end: 1320 },
+                            ]
+                        },
+                        {
+                            name: "Meliora Software Stage", acts: [
+                                { name: "Black Sheep Wall", start: 755, end: 785 },
+                                { name: "Lagrimas", start: 825, end: 855 },
+                                { name: "Swamp Coffin", start: 900, end: 940 },
+                                { name: "Eyes", start: 980, end: 1025 },
+                                { name: "Sugar Horse", start: 1070, end: 1110 },
+                                { name: "Slow Crush", start: 1160, end: 1210 },
+                                { name: "Shining", start: 1260, end: 1320 },
+                            ]
+                        },
+                    ]
+                }
+            ];
+
+            /* ============================== CONFIG ============================== */
+            const COLS = 8, ROWS = 8;
+            const STEP_MIN = 2;
+            const WAIT_MIN = 4;
+            const IDLE_TICK_MS = 250; // real-world ms per idle tick — quarter-second ticks so watch-time (and score) accrue smoothly
+            const IDLE_MIN_PER_TICK = 0.1; // in-game minutes per tick (same overall pace as before: 0.4 min/real-second, just finer-grained)
+            const BAR_MIN = 5;
+            const TOILET_MIN = 3;
+            const MERCH_MIN = 3;
+            const PEE_DECAY_PER_MIN = 0.16; // urgency rises over time — no natural relief, only a toilet clears it
+            const PINT_PEE_INCREASE = 30; // drinking pushes urgency up
+            const ENERGY_DECAY_PER_STEP = 1.9; // energy only ever comes back from a pint — no idle or watching recovery
+            const HIGH_ENERGY_THRESHOLD = 60; // at or above this, steps only cost half the usual time
+            const STARTING_COINS = 30;
+            const PRE_GAME_BUFFER_MIN = 5; // you're let in this many minutes before the lineup actually starts
+            const EASTER_EGG_SEQUENCE = ["up", "down", "up", "down", "left", "right", "left", "right"];
+            const EASTER_EGG_BONUS = 50;
+            const PEE_ACCIDENT_PENALTY = 30; // deducted each time you don't make it to a toilet in time
+
+            // two rare pickups that appear at a random empty square, sit for a while, and vanish if you don't grab them in time
+            const MILK_LIFETIME_RANGE = [8, 15];   // minutes on the ground before it goes off
+            const MILK_GAP_RANGE = [25, 45];       // minutes between one disappearing and the next appearing
+            const MILK_BUFF_DURATION = 15;        // minutes of halved step time after drinking it
+            const CROWDSURF_LIFETIME_RANGE = [8, 15];
+            const CROWDSURF_GAP_RANGE = [30, 55];  // rarer than milk
+            const EASTER_EGG_ITEMS = { 1: "Forum Pass", 2: "Glass of Milk" }; // day 1 = Saturday, day 2 = Sunday
+            const EASTER_EGG_SHORT = { 1: "Pass", 2: "Milk" };
+            const PINT_COST = 15;
+            const COIN_RESPAWN_MIN_GAP = 22, COIN_RESPAWN_MAX_GAP = 38;
+            const COIN_GROUND_CAP = 6;
+            const COIN_VALUE_RANGE = [5, 15];
+            const OBSTACLE_ICONS = ["🪑", "🧍", "👥", "📦", "🎒", "🔊"];
+            // muted, distinguishable per-stage colours (used for tiles, key panel swatches, labels)
+            const STAGE_COLORS = ["#a8453a", "#7a8a94", "#b8923f", "#8a6a8a", "#7a8a5a", "#9a6a6a"];
+            const MERCH_ITEMS = ["Site Tee", "Enamel Pin Set", "Bucket Hat", "Patch Bundle", "Battle Vest Patch", "Refillable Cup", "Mystery Grab Bag", "Tour Tote"];
+
+            // band -> YouTube link, where known. Matched against the lineup case-insensitively.
+            const BAND_VIDEOS = [
+                { "band": "Cabal", "url": null },
+                { "band": "Holy Fawn", "url": "https://www.youtube.com/watch?v=yb7TEn8079I" },
+                { "band": "Car Bomb", "url": "https://www.youtube.com/watch?v=EA5eIAfutYU" },
+                { "band": "Eyehategod", "url": "https://www.youtube.com/watch?v=YTwZdaNEWIw" },
+                { "band": "Crowbar", "url": null },
+                { "band": "Health", "url": null },
+                { "band": "Carcass", "url": "https://www.youtube.com/watch?v=5KKYJD09qCk" },
+                { "band": "Cult of Luna", "url": null },
+                { "band": "Fange", "url": "https://www.youtube.com/watch?v=zuJgy4swTiI" },
+                { "band": "Machukha", "url": null },
+                { "band": "Ultha", "url": null },
+                { "band": "Wormed", "url": null },
+                { "band": "Krallice", "url": null },
+                { "band": "Gorerotted", "url": null },
+                { "band": "Frontierer", "url": null },
+                { "band": "The Berzerker", "url": "https://www.youtube.com/watch?v=wxBeN_qPnn4" },
+                { "band": "Intercourse", "url": null },
+                { "band": "Hundred Year Old Man", "url": null },
+                { "band": "Coltaine", "url": null },
+                { "band": "The Moth Gatherer", "url": null },
+                { "band": "Rwake", "url": null },
+                { "band": "John Cxnnor", "url": null },
+                { "band": "Møl", "url": null },
+                { "band": "Pelican", "url": null },
+                { "band": "Hippotraktor", "url": null },
+                { "band": "LIK", "url": "https://www.youtube.com/watch?v=XgGZ1xt1Afw" },
+                { "band": "Worm", "url": null },
+                { "band": "Walls of Jericho", "url": null },
+                { "band": "Wolves in the Throne Room", "url": "https://www.youtube.com/watch?v=p9N-9DAlbYM" },
+                { "band": "Triptykon", "url": null },
+                { "band": "Igorrr", "url": null },
+                { "band": "Satyricon", "url": "https://www.youtube.com/watch?v=i5GhFL0OWq8" },
+                { "band": "Mastiff", "url": null },
+                { "band": "Medulla Nocte", "url": null },
+                { "band": "Final Dose", "url": null },
+                { "band": "Groza", "url": null },
+                { "band": "Dodsrit", "url": null },
+                { "band": "Weekend Nachos", "url": null },
+                { "band": "Benediction", "url": "https://www.youtube.com/watch?v=tfQJT29e6T0" },
+                { "band": "Black Sheep Wall", "url": null },
+                { "band": "Lagrimas", "url": null },
+                { "band": "Swamp Coffin", "url": null },
+                { "band": "Eyes", "url": null },
+                { "band": "Sugar Horse", "url": null },
+                { "band": "Shining", "url": null },
+                { "band": "Slow Crush", "url": "https://www.youtube.com/watch?v=4X2W81yWAYI" }
+            ];
+            const BAND_VIDEO_MAP = new Map(BAND_VIDEOS.filter(b => b.url).map(b => [b.band.toLowerCase().trim(), b.url]));
+            function youTubeIdFromUrl(url) {
+                const m = url.match(/[?&]v=([^&]+)/);
+                return m ? m[1] : null;
+            }
+            // scoring: every minute watched earns points, must-not-miss minutes earn more, and a full must-not-miss set earns a bonus
+            const POINTS_PER_MIN = 1;
+            const MUST_MISS_MULTIPLIER = 3;
+            const MUST_MISS_FULL_BONUS = 100;
+            const POINTS_PER_PINT = 5;
+            const POINTS_PER_MERCH = 20;
+            const SOON_FLASH_MIN = 10; // a band starting within this many minutes flashes in the lineup
+
+            /* ============================== UTIL ============================== */
+            function fmtClock(mins) {
+                mins = Math.round(mins) % 1440;
+                if (mins < 0) mins += 1440;
+                let h = Math.floor(mins / 60), m = mins % 60;
+                const ap = h >= 12 ? "PM" : "AM";
+                let h12 = h % 12; if (h12 === 0) h12 = 12;
+                return h12 + ":" + String(m).padStart(2, "0") + " " + ap;
+            }
+            function fmtDuration(mins) {
+                mins = Math.max(0, Math.round(mins));
+                const h = Math.floor(mins / 60), m = mins % 60;
+                return h > 0 ? (h + "h " + m + "m") : (m + "m");
+            }
+            function key(x, y) { return x + "," + y; }
+            function rnd(a, b) { return a + Math.random() * (b - a); }
+            function rndInt(a, b) { return Math.floor(rnd(a, b + 1)); }
+            function choice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+            function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+            function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+            /* ============================== GRID GENERATION ============================== */
+            function openSidesInfo(cell, grid) {
+                const dirs = [["top", 0, -1], ["right", 1, 0], ["bottom", 0, 1], ["left", -1, 0]];
+                const open = [], blocked = [];
+                dirs.forEach(([name, dx, dy]) => {
+                    const nx = cell.x + dx, ny = cell.y + dy;
+                    const inBounds = nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS;
+                    if (inBounds && grid[ny][nx] === 0) open.push(name); else blocked.push(name);
+                });
+                return { open, blocked };
+            }
+
+            function buildGrid(numStages) {
+                let grid, entrance, stages, bars, toiletPositions, merchStandsRaw, obstacleIcons, spawnPool;
+                let attempts = 0;
+                while (attempts < 100) {
+                    attempts++;
+                    grid = [];
+                    for (let y = 0; y < ROWS; y++) { grid.push(new Array(COLS).fill(0)); }
+                    obstacleIcons = {};
+                    const clusterCount = rndInt(4, 7);
+                    for (let c = 0; c < clusterCount; c++) {
+                        const cx = rndInt(1, COLS - 2), cy = rndInt(1, ROWS - 2);
+                        const w = rndInt(1, 2), h = rndInt(1, 2);
+                        const icon = choice(OBSTACLE_ICONS);
+                        for (let dx = 0; dx < w; dx++) {
+                            for (let dy = 0; dy < h; dy++) {
+                                const x = cx + dx, y = cy + dy;
+                                if (x >= 0 && x < COLS && y >= 0 && y < ROWS) { grid[y][x] = 1; obstacleIcons[key(x, y)] = icon; }
+                            }
+                        }
+                    }
+
+                    entrance = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+                    grid[entrance.y][entrance.x] = 0;
+
+                    const { dist } = bfs(grid, entrance);
+                    let reachable = 0, total = 0;
+                    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+                        if (grid[y][x] === 0) { total++; if (dist.has(key(x, y))) reachable++; }
+                    }
+                    if (reachable < total * 0.9 || total < COLS * ROWS * 0.55) continue;
+
+                    const poolAll = [];
+                    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+                        if (grid[y][x] === 0 && dist.has(key(x, y)) && !(x === entrance.x && y === entrance.y)) poolAll.push({ x, y });
+                    }
+                    if (poolAll.length < COLS * ROWS * 0.3) continue;
+
+                    // toilets must only be reachable from at most 2 sides (walled in on the rest)
+                    const toiletCandidates = poolAll.filter(p => {
+                        const { open } = openSidesInfo(p, grid);
+                        return open.length >= 1 && open.length <= 2;
+                    });
+                    if (toiletCandidates.length < 2) continue;
+
+                    function distBetween(a, b, metric) {
+                        if (metric === "chebyshev") return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+                        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+                    }
+                    function placeSet(count, minDist, excludeZones, pool, metric) {
+                        pool = pool || poolAll;
+                        metric = metric || "manhattan";
+                        const placed = [];
+                        let tries = 0;
+                        while (placed.length < count && tries < 1500) {
+                            tries++;
+                            const cand = pool[Math.floor(Math.random() * pool.length)];
+                            const okDist = placed.every(p => distBetween(p, cand, metric) >= minDist)
+                                && distBetween(entrance, cand, metric) >= minDist
+                                && excludeZones.every(z => z.every(p => distBetween(p, cand, metric) >= minDist));
+                            if (okDist) placed.push(cand);
+                        }
+                        return placed;
+                    }
+
+                    // stages always keep at least one empty square of separation (chessboard distance, so diagonal touching counts too)
+                    stages = placeSet(numStages, 2, [], poolAll, "chebyshev");
+                    if (stages.length < numStages) continue;
+                    bars = placeSet(2, 1, [stages]);
+                    if (bars.length < 2) continue;
+                    toiletPositions = placeSet(2, 1, [stages, bars], toiletCandidates);
+                    if (toiletPositions.length < 2) continue;
+                    merchStandsRaw = placeSet(2, 1, [stages, bars, toiletPositions]);
+                    if (merchStandsRaw.length < 2) continue;
+
+                    const occupied = new Set([entrance, ...stages, ...bars, ...toiletPositions, ...merchStandsRaw].map(p => key(p.x, p.y)));
+                    spawnPool = poolAll.filter(p => !occupied.has(key(p.x, p.y)));
+                    if (spawnPool.length < 6) continue;
+
+                    const initialCoinCount = Math.min(rndInt(6, 8), spawnPool.length);
+                    const shuffledFree = shuffle(spawnPool);
+                    const coinPickups = shuffledFree.slice(0, initialCoinCount).map(p => ({ x: p.x, y: p.y, value: rndInt(COIN_VALUE_RANGE[0], COIN_VALUE_RANGE[1]), collected: false }));
+                    const merchStands = merchStandsRaw.map(p => ({ x: p.x, y: p.y, item: choice(MERCH_ITEMS), cost: rndInt(20, 38), purchased: false }));
+                    // toilets: store which sides are walled off (for drawing). Queue schedule is attached later once day times are known.
+                    const toilets = toiletPositions.map(p => {
+                        const sides = openSidesInfo(p, grid);
+                        return { x: p.x, y: p.y, open: sides.open, blocked: sides.blocked };
+                    });
+
+                    return { grid, entrance, stages, bars, toilets, merchStands, coinPickups, obstacleIcons, spawnPool };
+                }
+                // fallback: shouldn't happen given testing, but guarantees a playable grid
+                grid = []; for (let y = 0; y < ROWS; y++) grid.push(new Array(COLS).fill(0));
+                entrance = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+                const fallbackStages = [];
+                for (let i = 0; i < numStages; i++) fallbackStages.push({ x: (i * 2 + 1) % COLS, y: Math.floor(i / 2) * 2 });
+                return {
+                    grid, entrance, stages: fallbackStages,
+                    bars: [{ x: 1, y: 5 }, { x: 6, y: 5 }],
+                    toilets: [
+                        { x: 0, y: 2, open: ["right"], blocked: ["top", "bottom", "left"] },
+                        { x: 7, y: 2, open: ["left"], blocked: ["top", "bottom", "right"] }
+                    ],
+                    merchStands: [{ x: 2, y: 1, item: "Site Tee", cost: 25, purchased: false }, { x: 5, y: 1, item: "Enamel Pin Set", cost: 22, purchased: false }],
+                    coinPickups: [{ x: 3, y: 4, value: 10, collected: false }, { x: 4, y: 4, value: 10, collected: false }],
+                    obstacleIcons: {}, spawnPool: [{ x: 3, y: 4 }, { x: 4, y: 4 }]
+                };
+            }
+
+            // A toilet's queue always counts all the way down to 0 before a fresh random wait is assigned —
+            // never a wobble that rises again mid-way. Precomputed as alternating "clear" / "counting down" segments.
+            function buildQueueSchedule(dayOpen, dayClose) {
+                const segments = [];
+                let t = dayOpen - 15; // small buffer so the schedule is defined even during the pre-doors head start
+                const endBound = dayClose + 5;
+                while (t < endBound) {
+                    const gapDur = rndInt(6, 18);
+                    segments.push({ start: t, end: t + gapDur, type: "gap" });
+                    t += gapDur;
+                    if (t >= endBound) break;
+                    const waitDur = rndInt(3, 9);
+                    segments.push({ start: t, end: t + waitDur, type: "countdown", initialWait: waitDur });
+                    t += waitDur;
+                }
+                return segments;
+            }
+            function queueWaitAt(toilet, t) {
+                const segs = toilet.queueSchedule;
+                if (!segs || !segs.length) return 0;
+                for (let i = 0; i < segs.length; i++) {
+                    const s = segs[i];
+                    if (t >= s.start && t < s.end) {
+                        if (s.type === "gap") return 0;
+                        return Math.max(0, Math.round(s.initialWait - (t - s.start)));
+                    }
+                }
+                return 0;
+            }
+
+            function bfs(grid, start) {
+                const dist = new Map();
+                const parent = new Map();
+                const sK = key(start.x, start.y);
+                dist.set(sK, 0);
+                const q = [start];
+                let qi = 0;
+                const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+                while (qi < q.length) {
+                    const cur = q[qi++];
+                    const cK = key(cur.x, cur.y);
+                    const d = dist.get(cK);
+                    for (const [dx, dy] of dirs) {
+                        const nx = cur.x + dx, ny = cur.y + dy;
+                        if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) continue;
+                        if (grid[ny][nx] === 1) continue;
+                        const nK = key(nx, ny);
+                        if (!dist.has(nK)) {
+                            dist.set(nK, d + 1);
+                            parent.set(nK, cK);
+                            q.push({ x: nx, y: ny });
+                        }
+                    }
+                }
+                return { dist, parent };
+            }
+
+            function tracePath(bfsObj, targetPos) {
+                const path = [];
+                let cur = key(targetPos.x, targetPos.y);
+                if (!bfsObj.dist.has(cur)) return null;
+                const startK = key(bfsObj.start.x, bfsObj.start.y);
+                while (true) {
+                    const [x, y] = cur.split(",").map(Number);
+                    path.push({ x, y });
+                    if (cur === startK) break;
+                    const p = bfsObj.parent.get(cur);
+                    if (p === undefined) break;
+                    cur = p;
+                }
+                path.reverse();
+                return path;
+            }
+
+            /* ============================== SCHEDULE PREP ============================== */
+            function buildDaySchedules(dayIndex) {
+                const dayData = DAY_LINEUP[dayIndex];
+                const schedules = dayData.stages.map((stage, si) => stage.acts.map((a, ai) => ({
+                    id: "d" + dayIndex + "_s" + si + "_" + ai,
+                    stage: si,
+                    name: a.name,
+                    start: a.start,
+                    end: a.end
+                })));
+                const stageNames = dayData.stages.map(s => s.name);
+                const dayOpen = Math.min(...schedules.flat().map(a => a.start));
+                const dayClose = Math.max(...schedules.flat().map(a => a.end));
+                return { schedules, stageNames, dayOpen, dayClose, label: dayData.label, short: dayData.short };
+            }
+
+            function pickMustNotMiss(schedules) {
+                const all = schedules.flat();
+                return shuffle(all).slice(0, 3).map(act => ({ act, warned15: false, warned5: false, warnedMissed: false, bonusAwarded: false }));
+            }
+
+            /* ============================== SOLVER ============================== */
+            function solveOptimal(schedules, distFns, dayOpen) {
+                const events = [];
+                schedules.forEach(list => list.forEach(b => events.push(b)));
+                events.sort((a, b) => a.start - b.start || a.end - b.end);
+
+                function stageDist(f, t) { if (f === t) return 0; return distFns.stageToStage[f][t]; }
+                function entranceDist(t) { return distFns.entranceToStage[t]; }
+
+                const n = events.length;
+                const dp = new Array(n).fill(null);
+                for (let i = 0; i < n; i++) {
+                    const ei = events[i];
+                    const d0 = entranceDist(ei.stage);
+                    if (dayOpen + d0 * STEP_MIN <= ei.start) {
+                        dp[i] = { count: 1, steps: d0, prev: -1 };
+                    }
+                    for (let j = 0; j < i; j++) {
+                        if (!dp[j]) continue;
+                        const ej = events[j];
+                        const d = stageDist(ej.stage, ei.stage);
+                        const arrival = ej.end + d * STEP_MIN;
+                        if (arrival <= ei.start) {
+                            const cand = { count: dp[j].count + 1, steps: dp[j].steps + d, prev: j };
+                            if (!dp[i] || cand.count > dp[i].count || (cand.count === dp[i].count && cand.steps < dp[i].steps)) {
+                                dp[i] = cand;
+                            }
+                        }
+                    }
+                }
+                let bestI = -1;
+                for (let i = 0; i < n; i++) {
+                    if (!dp[i]) continue;
+                    if (bestI === -1) { bestI = i; continue; }
+                    if (dp[i].count > dp[bestI].count || (dp[i].count === dp[bestI].count && dp[i].steps < dp[bestI].steps)) bestI = i;
+                }
+                const chain = [];
+                let cur = bestI;
+                while (cur !== undefined && cur !== -1 && cur !== null) {
+                    chain.push(events[cur]);
+                    cur = dp[cur] ? dp[cur].prev : -1;
+                    if (cur === -1) break;
+                }
+                chain.reverse();
+                const totalSteps = bestI === -1 ? 0 : dp[bestI].steps;
+                return { chain, totalSteps };
+            }
+
+            /* ============================== SESSION PREP (generated up front, shown in onboarding, then played) ============================== */
+            let PENDING = null; // {dayIndex, schedules, stageNames, dayOpen, dayClose, label, short, grid, entrance, stages, bars, toilets, merchStands, coinPickups, obstacleIcons, spawnPool, mustNotMiss, bfsEntrance, bfsStages, stageToStage, entranceToStage, solverResult}
+            let G = null;
+            const SESSION = {
+                cumulative: { steps: 0, pints: 0, bandsFull: 0, bandsPart: 0, mustCaught: 0, mustTotal: 0, optimalBands: 0, optimalSteps: 0, coinsCollected: 0, score: 0, merchBought: [], easterEggs: [], milkCollected: 0, crowdSurfCollected: 0 },
+                dayHistories: []
+            };
+
+            function prepareDaySession(dayIndex) {
+                const { schedules, stageNames, dayOpen, dayClose, label, short } = buildDaySchedules(dayIndex);
+                const { grid, entrance, stages, bars, toilets, merchStands, coinPickups, obstacleIcons, spawnPool } = buildGrid(stageNames.length);
+                toilets.forEach(t => { t.queueSchedule = buildQueueSchedule(dayOpen, dayClose); });
+
+                const bfsEntrance = bfs(grid, entrance); bfsEntrance.start = entrance;
+                const bfsStages = stages.map(s => { const b = bfs(grid, s); b.start = s; return b; });
+
+                const n = stages.length;
+                const stageToStage = [];
+                for (let i = 0; i < n; i++) {
+                    stageToStage.push([]);
+                    for (let j = 0; j < n; j++) {
+                        if (i === j) { stageToStage[i][j] = 0; continue; }
+                        const dk = key(stages[j].x, stages[j].y);
+                        stageToStage[i][j] = bfsStages[i].dist.has(dk) ? bfsStages[i].dist.get(dk) : 999;
+                    }
+                }
+                const entranceToStage = stages.map(s => {
+                    const dk = key(s.x, s.y);
+                    return bfsEntrance.dist.has(dk) ? bfsEntrance.dist.get(dk) : 999;
+                });
+
+                const solverResult = solveOptimal(schedules, { stageToStage, entranceToStage }, dayOpen - PRE_GAME_BUFFER_MIN);
+                const mustNotMiss = pickMustNotMiss(schedules);
+
+                PENDING = {
+                    dayIndex, label, short,
+                    schedules, stageNames, dayOpen, dayClose,
+                    grid, entrance, stages, bars, toilets, merchStands, coinPickups, obstacleIcons, spawnPool,
+                    bfsEntrance, bfsStages, stageToStage, entranceToStage,
+                    solverResult, mustNotMiss
+                };
+            }
+
+            function beginGame() {
+                const p = PENDING;
+                const startTime = p.dayOpen - PRE_GAME_BUFFER_MIN;
+                G = {
+                    dayIndex: p.dayIndex, dayLabel: p.label, dayShort: p.short,
+                    stageNames: p.stageNames, schedules: p.schedules, dayOpen: p.dayOpen, dayClose: p.dayClose,
+                    grid: p.grid, entrance: p.entrance, stages: p.stages, bars: p.bars, toilets: p.toilets,
+                    merchStands: p.merchStands, coinPickups: p.coinPickups, obstacleIcons: p.obstacleIcons, spawnPool: p.spawnPool,
+                    bfsEntrance: p.bfsEntrance, bfsStages: p.bfsStages, stageToStage: p.stageToStage, entranceToStage: p.entranceToStage,
+                    solverResult: p.solverResult, mustNotMiss: p.mustNotMiss,
+                    player: { x: p.entrance.x, y: p.entrance.y },
+                    time: startTime,
+                    energy: 100, needPee: 0, coins: STARTING_COINS,
+                    steps: 0, pints: 0, loos: 0, peedSelf: 0, coinsCollected: 0, coinsSpent: 0, merchBought: [],
+                    easterEggClaimed: false, easterEggItem: null,
+                    nextCoinSpawnAt: startTime + rndInt(COIN_RESPAWN_MIN_GAP, COIN_RESPAWN_MAX_GAP),
+                    milkPickup: null, nextMilkSpawnAt: startTime + rndInt(MILK_GAP_RANGE[0], MILK_GAP_RANGE[1]), milkBuffUntil: 0,
+                    crowdSurfPickup: null, nextCrowdSurfSpawnAt: startTime + rndInt(CROWDSURF_GAP_RANGE[0], CROWDSURF_GAP_RANGE[1]), crowdSurfCharges: 0,
+                    milkCollected: 0, crowdSurfCollected: 0,
+                    path: [{ x: p.entrance.x, y: p.entrance.y, t: startTime }],
+                    bandProgress: {},
+                    over: false
+                };
+                p.schedules.forEach(list => list.forEach(b => G.bandProgress[b.id] = 0));
+                egKeyBuffer = [];
+                currentVideoKey = null;
+                lastPulsedScore = 0;
+                document.getElementById("video-frame").src = "";
+                document.getElementById("video-panel").classList.remove("playing");
+                document.getElementById("video-caption").textContent = "Nothing playing right now";
+
+                document.getElementById("log").innerHTML = "";
+                document.getElementById("day-flag").innerHTML = G.dayShort + " <b>· Round " + G.dayIndex + " of 2</b>";
+                document.getElementById("overlay-onboarding").classList.add("hidden");
+                document.getElementById("status-bar").classList.remove("warn");
+                toast("You're in early — first act starts in " + PRE_GAME_BUFFER_MIN + " min. Get yourself in position.");
+                renderAll();
+            }
+
+            /* ============================== TIME / MOVEMENT ============================== */
+            function poiAt(x, y) {
+                for (let i = 0; i < G.stages.length; i++) { const p = G.stages[i]; if (p.x === x && p.y === y) return { type: "stage", index: i }; }
+                for (let i = 0; i < G.bars.length; i++) { const p = G.bars[i]; if (p.x === x && p.y === y) return { type: "bar", index: i }; }
+                for (let i = 0; i < G.toilets.length; i++) { const p = G.toilets[i]; if (p.x === x && p.y === y) return { type: "toilet", index: i }; }
+                for (let i = 0; i < G.merchStands.length; i++) { const p = G.merchStands[i]; if (p.x === x && p.y === y) return { type: "merch", index: i }; }
+                if (G.entrance.x === x && G.entrance.y === y) return { type: "entrance" };
+                return null;
+            }
+            function coinAt(x, y) {
+                return G.coinPickups.find(c => c.x === x && c.y === y && !c.collected) || null;
+            }
+            // what it costs to step onto a square right now, or null if free to enter (toilets are always free)
+            function entryCost(poi) {
+                if (!poi) return null;
+                if (poi.type === "bar") return PINT_COST;
+                if (poi.type === "merch") {
+                    const stand = G.merchStands[poi.index];
+                    return stand.purchased ? null : stand.cost;
+                }
+                return null;
+            }
+            function currentBandAt(stageIndex) {
+                const list = G.schedules[stageIndex];
+                return list.find(b => b.start <= G.time && G.time < b.end) || null;
+            }
+            function nextBandAt(stageIndex, afterTime) {
+                const list = G.schedules[stageIndex];
+                const upcoming = list.filter(b => b.start > afterTime).sort((a, b) => a.start - b.start);
+                return upcoming[0] || null;
+            }
+
+            function checkMustMissWarnings(prevTime, newTime) {
+                G.mustNotMiss.forEach(m => {
+                    const act = m.act;
+                    if (!m.warned15 && prevTime < act.start - 15 && newTime >= act.start - 15) {
+                        m.warned15 = true;
+                        toast("⏰ " + act.name + " (must-see) starts in 15 min at " + G.stageNames[act.stage], true);
+                    }
+                    if (!m.warned5 && prevTime < act.start - 5 && newTime >= act.start - 5) {
+                        m.warned5 = true;
+                        toast("🔥 " + act.name + " starts in 5 min — get to " + G.stageNames[act.stage] + "!", true);
+                    }
+                    if (!m.warnedMissed && prevTime < act.end && newTime >= act.end) {
+                        m.warnedMissed = true;
+                        const watched = G.bandProgress[act.id] || 0;
+                        const dur = act.end - act.start;
+                        if (watched < dur * 0.98) {
+                            toast(watched > 0 ? "😬 Only caught part of must-see " + act.name : "💀 Missed must-see " + act.name + " completely");
+                        }
+                    }
+                });
+            }
+
+            function maybeSpawnCoin(newTime) {
+                while (G.time <= G.nextCoinSpawnAt && newTime >= G.nextCoinSpawnAt) {
+                    const onGround = G.coinPickups.filter(c => !c.collected).length;
+                    if (onGround < COIN_GROUND_CAP) {
+                        const occupied = new Set(G.coinPickups.filter(c => !c.collected).map(c => key(c.x, c.y)));
+                        const candidates = G.spawnPool.filter(p => !occupied.has(key(p.x, p.y)));
+                        if (candidates.length) {
+                            const spot = choice(candidates);
+                            G.coinPickups.push({ x: spot.x, y: spot.y, value: rndInt(COIN_VALUE_RANGE[0], COIN_VALUE_RANGE[1]), collected: false });
+                        }
+                    }
+                    G.nextCoinSpawnAt += rndInt(COIN_RESPAWN_MIN_GAP, COIN_RESPAWN_MAX_GAP);
+                }
+            }
+
+            function powerupOccupiedCells() {
+                const occ = new Set();
+                if (G.milkPickup) occ.add(key(G.milkPickup.x, G.milkPickup.y));
+                if (G.crowdSurfPickup) occ.add(key(G.crowdSurfPickup.x, G.crowdSurfPickup.y));
+                G.coinPickups.filter(c => !c.collected).forEach(c => occ.add(key(c.x, c.y)));
+                return occ;
+            }
+            // Generic spawn/expire cycle for the milk and crowd-surf pickups: appears somewhere free, sits for a
+            // while, and if nobody grabs it, disappears — only then does a fresh one get scheduled to appear.
+            function updatePowerup(pickupKey, nextSpawnKey, lifetimeRange, gapRange, newTime) {
+                if (G[pickupKey] && newTime >= G[pickupKey].expiresAt) {
+                    G[pickupKey] = null;
+                }
+                while (!G[pickupKey] && G.time <= G[nextSpawnKey] && newTime >= G[nextSpawnKey]) {
+                    const occupied = powerupOccupiedCells();
+                    const candidates = G.spawnPool.filter(p => !occupied.has(key(p.x, p.y)));
+                    if (candidates.length) {
+                        const spot = choice(candidates);
+                        G[pickupKey] = { x: spot.x, y: spot.y, expiresAt: newTime + rndInt(lifetimeRange[0], lifetimeRange[1]) };
+                    }
+                    G[nextSpawnKey] += rndInt(gapRange[0], gapRange[1]);
+                }
+            }
+            function milkAt(x, y) { return (G.milkPickup && G.milkPickup.x === x && G.milkPickup.y === y) ? G.milkPickup : null; }
+            function crowdSurfAt(x, y) { return (G.crowdSurfPickup && G.crowdSurfPickup.x === x && G.crowdSurfPickup.y === y) ? G.crowdSurfPickup : null; }
+
+            function advanceTime(minutes) {
+                const start = G.time;
+                const end = Math.min(G.time + minutes, G.dayClose);
+                const dt = end - start;
+                if (dt <= 0) { G.time = end; checkClose(); return; }
+
+                // needPee is an urgency value: 0 = just been, 100 = about to go right now. Rises over time; only a toilet clears it.
+                G.needPee = clamp(G.needPee + PEE_DECAY_PER_MIN * dt, 0, 100);
+
+                const poi = poiAt(G.player.x, G.player.y);
+                if (poi && poi.type === "stage") {
+                    const list = G.schedules[poi.index];
+                    for (const b of list) {
+                        const overlapStart = Math.max(b.start, start);
+                        const overlapEnd = Math.min(b.end, end);
+                        if (overlapEnd > overlapStart) {
+                            G.bandProgress[b.id] = Math.min(b.end - b.start, (G.bandProgress[b.id] || 0) + (overlapEnd - overlapStart));
+                        }
+                    }
+                }
+
+                // must-not-miss bonus fires once, right when a set is actually caught in full
+                G.mustNotMiss.forEach(m => {
+                    if (m.bonusAwarded) return;
+                    const dur = m.act.end - m.act.start;
+                    const watched = G.bandProgress[m.act.id] || 0;
+                    if (watched >= dur * 0.98) {
+                        m.bonusAwarded = true;
+                        popScore(MUST_MISS_FULL_BONUS, m.act.name + " — full set!");
+                    }
+                });
+
+                checkMustMissWarnings(start, end);
+                maybeSpawnCoin(end);
+                updatePowerup("milkPickup", "nextMilkSpawnAt", MILK_LIFETIME_RANGE, MILK_GAP_RANGE, end);
+                updatePowerup("crowdSurfPickup", "nextCrowdSurfSpawnAt", CROWDSURF_LIFETIME_RANGE, CROWDSURF_GAP_RANGE, end);
+                G.time = end;
+
+                if (G.needPee >= 100 && !G.over) {
+                    G.peedSelf++;
+                    G.needPee = 60;
+                    G.energy = clamp(G.energy - 12, 0, 100);
+                    pushLog("You couldn't hold it. Not your finest moment.");
+                    toast("😬 You peed yourself. The day continues.");
+                    popScore(-PEE_ACCIDENT_PENALTY, "oops");
+                }
+                checkClose();
+            }
+
+            function checkClose() {
+                if (G.time >= G.dayClose && !G.over) {
+                    endDay();
+                }
+            }
+
+            function tryMove(dx, dy) {
+                if (G.over) return;
+                const nx = G.player.x + dx, ny = G.player.y + dy;
+                if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) return;
+                if (G.grid[ny][nx] === 1) return;
+
+                const destPoi = poiAt(nx, ny);
+                const cost = entryCost(destPoi);
+                if (cost !== null && G.coins < cost) {
+                    const need = cost - G.coins;
+                    toast("🚫 Need " + need + " more coin" + (need === 1 ? "" : "s") + " to get onto that square.", true);
+                    return;
+                }
+                if (destPoi && destPoi.type === "toilet") {
+                    const t = G.toilets[destPoi.index];
+                    const q = queueWaitAt(t, G.time);
+                    if (q > 0) {
+                        toast("🚻 Queue's " + fmtDuration(q) + " long — wait for it to clear.", true);
+                        return;
+                    }
+                }
+
+                G.player.x = nx; G.player.y = ny;
+                G.steps++;
+                const energyForSpeed = G.energy; // speed reflects energy going into the step, not after it's spent
+                G.energy = clamp(G.energy - ENERGY_DECAY_PER_STEP, 0, 100);
+                const speedMult = energyForSpeed <= 0 ? 2 : (energyForSpeed >= HIGH_ENERGY_THRESHOLD ? 0.5 : 1);
+                const milkActive = G.time < G.milkBuffUntil;
+                const mins = STEP_MIN * speedMult * (milkActive ? 0.5 : 1);
+                advanceTime(mins);
+                G.path.push({ x: nx, y: ny, t: G.time });
+
+                const coin = coinAt(nx, ny);
+                if (coin) {
+                    coin.collected = true;
+                    G.coins += coin.value;
+                    G.coinsCollected += coin.value;
+                    toast("🪙 Picked up " + coin.value + " coins.");
+                }
+
+                const milk = milkAt(nx, ny);
+                if (milk) {
+                    G.milkPickup = null;
+                    G.milkBuffUntil = G.time + MILK_BUFF_DURATION;
+                    G.milkCollected++;
+                    toast("🥛 Necked a glass of milk — steps are twice as fast for the next " + MILK_BUFF_DURATION + " min!");
+                }
+
+                const cs = crowdSurfAt(nx, ny);
+                if (cs) {
+                    G.crowdSurfPickup = null;
+                    G.crowdSurfCharges = (G.crowdSurfCharges || 0) + 1;
+                    G.crowdSurfCollected++;
+                    toast("🙌 Crowd surfed in — you've got a free teleport to any stage, use it whenever.");
+                }
+
+                if (destPoi && destPoi.type === "bar") {
+                    G.coins -= PINT_COST; G.coinsSpent += PINT_COST;
+                    G.energy = 100;
+                    G.needPee = clamp(G.needPee + PINT_PEE_INCREASE, 0, 100);
+                    G.pints++;
+                    advanceTime(BAR_MIN);
+                    toast("Pint necked (" + PINT_COST + " coins). Energy's back, bladder's not thanking you.");
+                    popScore(POINTS_PER_PINT, "pint");
+                } else if (destPoi && destPoi.type === "toilet") {
+                    G.needPee = 0;
+                    G.loos++;
+                    advanceTime(TOILET_MIN);
+                    toast("Free relief. Back out you go.");
+                } else if (destPoi && destPoi.type === "merch") {
+                    const stand = G.merchStands[destPoi.index];
+                    if (!stand.purchased) {
+                        G.coins -= stand.cost; G.coinsSpent += stand.cost;
+                        stand.purchased = true;
+                        G.merchBought.push(stand.item);
+                        advanceTime(MERCH_MIN);
+                        toast("🛍️ Bought a " + stand.item + " for " + stand.cost + " coins.");
+                        popScore(POINTS_PER_MERCH, stand.item);
+                    }
+                } else if (destPoi && destPoi.type === "stage") {
+                    const band = currentBandAt(destPoi.index);
+                    if (band) {
+                        toast("🎸 You're now watching " + band.name + " on " + G.stageNames[destPoi.index] + ".");
+                    } else {
+                        toast("You're at " + G.stageNames[destPoi.index] + " — nobody's on right now.");
+                    }
+                }
+
+                if (!G.over) renderAll();
+            }
+            function doWait() { if (G.over) return; advanceTime(WAIT_MIN); renderAll(); }
+
+            /* ============================== LOG / STATUS BAR ============================== */
+            function pushLog(msg) {
+                const logEl = document.getElementById("log");
+                const div = document.createElement("div");
+                div.innerHTML = "<span>" + fmtClock(G.time) + "</span>" + msg;
+                logEl.appendChild(div);
+            }
+            // Persistent status bar: replaces the message in place and stays visible (no fade-out),
+            // with a brief flash to draw the eye to the update. Also logs to history.
+            function toast(msg, warn) {
+                const el = document.getElementById("status-bar");
+                el.textContent = msg;
+                el.classList.toggle("warn", !!warn);
+                el.classList.remove("flash");
+                void el.offsetWidth; // restart the flash animation
+                el.classList.add("flash");
+                pushLog(msg);
+            }
+
+            // Pinball-style score popup for big, discrete scoring moments (pints, merch, bonuses).
+            // Continuous watch-time ticking is handled separately as a subtle pulse on the number itself.
+            function popScore(amount, label) {
+                if (amount === 0) return;
+                const positive = amount > 0;
+                const el = document.createElement("div");
+                el.className = "score-pop" + (positive ? "" : " neg");
+                el.textContent = (positive ? "+" : "-") + Math.abs(Math.round(amount)) + " PTS" + (label ? "  " + label.toUpperCase() : "");
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1200);
+            }
+
+            /* ============================== RENDER: FIELD ============================== */
+            const canvas = document.getElementById("field");
+            const ctx = canvas.getContext("2d");
+
+            function drawFieldOn(targetCtx, cv, gridObj, entranceObj, stagesObj, obstacleIconsObj, pathArr, playerPos, barsObj, toiletsObj, merchObj, coinsObj, liveCoins, nowPlayingSet, liveTime, milkObj, crowdSurfObj) {
+                const cols = gridObj[0].length, rows = gridObj.length;
+                const cell = cv.width / cols;
+                targetCtx.clearRect(0, 0, cv.width, cv.height);
+                /*for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        targetCtx.fillStyle = (x + y) % 2 === 0 ? "#22100f" : "#1a0d0d";
+                        targetCtx.fillRect(x * cell, y * cell, cell, cell);
+                    }
+                }*/
+                if (pathArr && pathArr.length) {
+                    targetCtx.strokeStyle = "rgba(226,24,28,0.18)";
+                    targetCtx.lineWidth = Math.max(2, cell * 0.1);
+                    targetCtx.lineJoin = "round"; targetCtx.lineCap = "round";
+                    targetCtx.beginPath();
+                    pathArr.forEach((p, i) => {
+                        const cx = p.x * cell + cell / 2, cy = p.y * cell + cell / 2;
+                        if (i === 0) targetCtx.moveTo(cx, cy); else targetCtx.lineTo(cx, cy);
+                    });
+                    targetCtx.stroke();
+                }
+                targetCtx.font = (cell * 0.55) + "px sans-serif";
+                targetCtx.textAlign = "center"; targetCtx.textBaseline = "middle";
+                for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+                    if (gridObj[y][x] === 1) {
+                        // darker tile so a blocked square reads clearly even before you notice the icon,
+                        // and the icon itself stays subtle rather than competing with stages/bars/etc.
+                        targetCtx.fillStyle = "rgba(0,0,0,0.42)";
+                        targetCtx.fillRect(x * cell, y * cell, cell, cell);
+                        const icon = obstacleIconsObj[key(x, y)] || "🚧";
+                        targetCtx.globalAlpha = 0.5;
+                        targetCtx.fillText(icon, x * cell + cell / 2, y * cell + cell / 2);
+                        targetCtx.globalAlpha = 1;
+                    }
+                }
+                targetCtx.fillText("🚪", entranceObj.x * cell + cell / 2, entranceObj.y * cell + cell / 2);
+
+                if (coinsObj) coinsObj.filter(c => !c.collected).forEach(c => {
+                    targetCtx.font = (cell * 0.36) + "px sans-serif";
+                    targetCtx.fillText("🪙", c.x * cell + cell / 2, c.y * cell + cell / 2);
+                });
+
+                // rare pickups: a soft glow so they read as special, distinct from ordinary coins
+                if (milkObj) {
+                    targetCtx.save();
+                    targetCtx.shadowColor = "#f2ece3"; targetCtx.shadowBlur = cell * 0.35;
+                    targetCtx.font = (cell * 0.5) + "px sans-serif";
+                    targetCtx.fillText("🥛", milkObj.x * cell + cell / 2, milkObj.y * cell + cell / 2);
+                    targetCtx.restore();
+                }
+                if (crowdSurfObj) {
+                    targetCtx.save();
+                    targetCtx.shadowColor = "#e2181c"; targetCtx.shadowBlur = cell * 0.35;
+                    targetCtx.font = (cell * 0.5) + "px sans-serif";
+                    targetCtx.fillText("🙌", crowdSurfObj.x * cell + cell / 2, crowdSurfObj.y * cell + cell / 2);
+                    targetCtx.restore();
+                }
+
+                function lockOverlay(p, cost) {
+                    if (liveCoins === undefined || cost === null || liveCoins >= cost) return;
+                    targetCtx.fillStyle = "rgba(226,24,28,0.32)";
+                    targetCtx.fillRect(p.x * cell, p.y * cell, cell, cell);
+                }
+
+                targetCtx.font = (cell * 0.55) + "px sans-serif";
+                if (barsObj) barsObj.forEach(b => { lockOverlay(b, PINT_COST); targetCtx.fillText("🍺", b.x * cell + cell / 2, b.y * cell + cell / 2); });
+                if (toiletsObj) toiletsObj.forEach(t => {
+                    const q = (liveTime !== undefined && t.queueSchedule) ? queueWaitAt(t, liveTime) : 0;
+                    if (q > 0) {
+                        targetCtx.fillStyle = "rgba(226,24,28,0.32)";
+                        targetCtx.fillRect(t.x * cell, t.y * cell, cell, cell);
+                    }
+                    targetCtx.font = (cell * 0.55) + "px sans-serif";
+                    targetCtx.fillText("🚻", t.x * cell + cell / 2, t.y * cell + cell / 2);
+
+                    // walls on the sides a toilet block isn't accessible from
+                    if (t.blocked) {
+                        targetCtx.strokeStyle = "#050505";
+                        targetCtx.lineWidth = Math.max(3, cell * 0.13);
+                        targetCtx.lineCap = "square";
+                        t.blocked.forEach(side => {
+                            targetCtx.beginPath();
+                            if (side === "top") { targetCtx.moveTo(t.x * cell, t.y * cell); targetCtx.lineTo((t.x + 1) * cell, t.y * cell); }
+                            else if (side === "bottom") { targetCtx.moveTo(t.x * cell, (t.y + 1) * cell); targetCtx.lineTo((t.x + 1) * cell, (t.y + 1) * cell); }
+                            else if (side === "left") { targetCtx.moveTo(t.x * cell, t.y * cell); targetCtx.lineTo(t.x * cell, (t.y + 1) * cell); }
+                            else if (side === "right") { targetCtx.moveTo((t.x + 1) * cell, t.y * cell); targetCtx.lineTo((t.x + 1) * cell, (t.y + 1) * cell); }
+                            targetCtx.stroke();
+                        });
+                    }
+
+                    // live queue length, shown right on the square
+                    if (q > 0) {
+                        targetCtx.font = "bold " + (cell * 0.28) + "px 'JetBrains Mono', monospace";
+                        targetCtx.fillStyle = "#f2ece3";
+                        targetCtx.textBaseline = "bottom";
+                        targetCtx.fillText(q + "m", t.x * cell + cell / 2, (t.y + 1) * cell - 2);
+                        targetCtx.textBaseline = "middle";
+                    }
+                });
+                if (merchObj) merchObj.forEach(m => { lockOverlay(m, m.purchased ? null : m.cost); targetCtx.fillText(m.purchased ? "✅" : "🛍️", m.x * cell + cell / 2, m.y * cell + cell / 2); });
+
+                stagesObj.forEach((s, i) => {
+                    const col = STAGE_COLORS[i % STAGE_COLORS.length];
+                    if (nowPlayingSet && nowPlayingSet.has(i)) {
+                        targetCtx.strokeStyle = "#e2181c";
+                        targetCtx.lineWidth = Math.max(2, cell * 0.07);
+                        targetCtx.shadowColor = "rgba(226,24,28,0.9)"; targetCtx.shadowBlur = cell * 0.25;
+                        targetCtx.beginPath();
+                        targetCtx.arc(s.x * cell + cell / 2, s.y * cell + cell / 2, cell * 0.62, 0, Math.PI * 2);
+                        targetCtx.stroke();
+                        targetCtx.shadowBlur = 0;
+                    }
+                    targetCtx.fillStyle = col;
+                    targetCtx.fillRect(s.x * cell + 2, s.y * cell + 2, cell - 4, cell - 4);
+                    targetCtx.strokeStyle = "#0a0a0a";
+                    targetCtx.lineWidth = 1;
+                    targetCtx.strokeRect(s.x * cell + 2, s.y * cell + 2, cell - 4, cell - 4);
+                    targetCtx.font = "bold " + (cell * 0.46) + "px 'Oswald', sans-serif";
+                    targetCtx.fillStyle = "#0a0a0a";
+                    targetCtx.shadowColor = "rgba(255,255,255,.5)"; targetCtx.shadowBlur = cell * 0.08;
+                    targetCtx.fillText(String(i + 1), s.x * cell + cell / 2, s.y * cell + cell / 2);
+                    targetCtx.shadowBlur = 0;
+                });
+
+                if (playerPos) {
+                    targetCtx.font = (cell * 0.66) + "px sans-serif";
+                    targetCtx.fillText("🤘", playerPos.x * cell + cell / 2, playerPos.y * cell + cell / 2);
+                }
+            }
+
+            function nowPlayingSetFor() {
+                const s = new Set();
+                G.stages.forEach((st, i) => { if (currentBandAt(i)) s.add(i); });
+                return s;
+            }
+
+            function drawField() {
+                drawFieldOn(ctx, canvas, G.grid, G.entrance, G.stages, G.obstacleIcons, G.path, G.player, G.bars, G.toilets, G.merchStands, G.coinPickups, G.coins, nowPlayingSetFor(), G.time, G.milkPickup, G.crowdSurfPickup);
+            }
+
+            function renderLegend() {
+                const el = document.getElementById("legend");
+                el.innerHTML = "";
+                const parts = ["🚪 Door", "🍺 Bar (" + PINT_COST + "c)", "🚻 Toilet (free, mind the queue)", "🛍️ Merch", "🪙 Coin", "🥛 Milk (2x speed, 15 min — grab it fast)", "🙌 Crowd surf (free teleport)", "🪑 Obstacle", "ring = now playing", "▮ = wall, blocks that side"];
+                parts.forEach(p => { const s = document.createElement("span"); s.textContent = p; el.appendChild(s); });
+            }
+
+            /* ============================== RENDER: HUD ============================== */
+            function renderHUD() {
+                document.getElementById("v-clock").textContent = fmtClock(G.time);
+                document.getElementById("v-left").textContent = G.dayClose - G.time > 0 ? fmtDuration(G.dayClose - G.time) : "closed";
+                document.getElementById("v-coins").textContent = G.coins;
+
+                document.getElementById("energy-num").textContent = Math.round(G.energy);
+                document.getElementById("pee-num").textContent = Math.round(G.needPee);
+                document.getElementById("energy-fill").style.width = G.energy + "%";
+                const peeFill = document.getElementById("pee-fill");
+                peeFill.style.width = G.needPee + "%";
+                const peeCrit = G.needPee > 75;
+                peeFill.classList.toggle("crit", peeCrit);
+
+                const etaEl = document.getElementById("pee-eta");
+                const etaMin = Math.round((100 - G.needPee) / PEE_DECAY_PER_MIN);
+                etaEl.classList.toggle("crit", peeCrit);
+                etaEl.innerHTML = "<span>≈" + fmtDuration(etaMin) + " until you're in trouble</span><span>" + (peeCrit ? "find a loo!" : "") + "</span>";
+
+                const badgeEl = document.getElementById("energy-badge");
+                if (G.energy <= 0) {
+                    badgeEl.innerHTML = "<span class='status-badge bad'>Running on fumes — moving at half speed</span>";
+                } else if (G.energy < 30) {
+                    badgeEl.innerHTML = "<span class='status-badge warn'>Getting tired</span>";
+                } else if (G.energy >= HIGH_ENERGY_THRESHOLD) {
+                    badgeEl.innerHTML = "<span class='status-badge good'>Full of energy — moving fast</span>";
+                } else {
+                    badgeEl.innerHTML = "<span class='status-badge'>Feeling good</span>";
+                }
+
+                const score = computeScore();
+                document.getElementById("s-score").textContent = score;
+                document.getElementById("score-badge").textContent = score + " pts";
+                if (score > lastPulsedScore) {
+                    ["s-score", "score-badge"].forEach(id => {
+                        const el = document.getElementById(id);
+                        el.classList.remove("pulse");
+                        void el.offsetWidth;
+                        el.classList.add("pulse");
+                    });
+                }
+                lastPulsedScore = score;
+                document.getElementById("s-steps").textContent = G.steps;
+                document.getElementById("s-pints").textContent = G.pints;
+                document.getElementById("s-merch").textContent = G.merchBought.length;
+                document.getElementById("s-bands").textContent = countFullBands();
+                document.getElementById("s-secret").textContent = G.easterEggClaimed ? ((EASTER_EGG_SHORT[G.dayIndex] || "Found") + " ✓") : "—";
+
+                const teleportBtn = document.getElementById("btn-teleport");
+                teleportBtn.textContent = "🙌 Crowd surf (" + (G.crowdSurfCharges || 0) + ")";
+                teleportBtn.disabled = !(G.crowdSurfCharges > 0);
+
+                document.getElementById("day-status").textContent = fmtClock(G.time) + " · " + (G.dayClose - G.time > 0 ? fmtDuration(G.dayClose - G.time) + " left" : "closed");
+            }
+            function countFullBands() {
+                let n = 0;
+                G.schedules.forEach(list => list.forEach(b => { if ((G.bandProgress[b.id] || 0) >= (b.end - b.start) * 0.98) n++; }));
+                return n;
+            }
+            function countPartialBands() {
+                let n = 0;
+                G.schedules.forEach(list => list.forEach(b => { const dur = b.end - b.start; const w = G.bandProgress[b.id] || 0; if (w > 0 && w < dur * 0.98) n++; }));
+                return n;
+            }
+            // Score: every minute watched scores points; must-not-miss minutes score extra; catching a must-not-miss
+            // set in full earns a flat bonus on top. Derived fresh from bandProgress each time, never double-counted.
+            function pointsForBand(b, mustIds) {
+                const watched = G.bandProgress[b.id] || 0;
+                const isMust = mustIds.has(b.id);
+                let pts = watched * POINTS_PER_MIN * (isMust ? MUST_MISS_MULTIPLIER : 1);
+                if (isMust) {
+                    const dur = b.end - b.start;
+                    if (watched >= dur * 0.98) pts += MUST_MISS_FULL_BONUS;
+                }
+                return pts;
+            }
+            function computeScore() {
+                const mustIds = new Set(G.mustNotMiss.map(m => m.act.id));
+                let score = 0;
+                G.schedules.forEach(list => list.forEach(b => {
+                    score += pointsForBand(b, mustIds);
+                }));
+                score += G.pints * POINTS_PER_PINT;
+                score += G.merchBought.length * POINTS_PER_MERCH;
+                if (G.easterEggClaimed) score += EASTER_EGG_BONUS;
+                score -= G.peedSelf * PEE_ACCIDENT_PENALTY;
+                return Math.max(0, Math.round(score));
+            }
+
+            /* ============================== RENDER: MUST-NOT-MISS ============================== */
+            function renderMustMiss() {
+                const el = document.getElementById("mustmiss");
+                el.innerHTML = "";
+                G.mustNotMiss.forEach(m => {
+                    const act = m.act;
+                    const dur = act.end - act.start;
+                    const w = G.bandProgress[act.id] || 0;
+                    let status = "upcoming", label = "in " + fmtDuration(Math.max(0, Math.round(act.start - G.time)));
+                    if (G.time >= act.start && G.time < act.end) { status = "live"; label = "on now"; }
+                    else if (w >= dur * 0.98) { status = "full"; label = "caught in full"; }
+                    else if (w > 0) { status = "part"; label = "partly seen"; }
+                    else if (G.time >= act.end) { status = "missed"; label = "missed"; }
+                    const row = document.createElement("div");
+                    row.className = "mm-row status-" + status;
+                    row.innerHTML = "<span class='nm'>★ " + act.name + "<div class='st'>" + G.stageNames[act.stage] + " · " + fmtClock(act.start) + "</div></span><span>" + label + "</span>";
+                    el.appendChild(row);
+                });
+            }
+
+            /* ============================== RENDER: SCHEDULE ============================== */
+            function renderGantt() {
+                const el = document.getElementById("gantt-inner");
+                el.innerHTML = "";
+                const span = G.dayClose - G.dayOpen;
+                const mustIds = new Set(G.mustNotMiss.map(m => m.act.id));
+                const MIN_BLOCK_PCT = 1.6; // keep very short sets visible
+
+                // time ruler across the top, hourly ticks
+                const ruler = document.createElement("div"); ruler.className = "gantt-ruler";
+                const firstTick = Math.ceil(G.dayOpen / 60) * 60;
+                for (let t = firstTick; t <= G.dayClose; t += 60) {
+                    const pct = (t - G.dayOpen) / span * 100;
+                    const tick = document.createElement("div");
+                    tick.className = "tick";
+                    tick.style.left = pct + "%";
+                    tick.textContent = fmtClock(t).replace(":00", "").replace(" ", "");
+                    ruler.appendChild(tick);
+                }
+                el.appendChild(ruler);
+
+                G.schedules.forEach((list, si) => {
+                    const row = document.createElement("div");
+                    row.className = "gantt-row";
+                    const label = document.createElement("div");
+                    label.className = "gantt-row-label";
+                    label.textContent = (si + 1) + ". " + G.stageNames[si];
+                    row.appendChild(label);
+
+                    list.forEach(b => {
+                        const dur = b.end - b.start;
+                        const leftPct = (b.start - G.dayOpen) / span * 100;
+                        const widthPct = Math.max(MIN_BLOCK_PCT, dur / span * 100);
+                        const w = G.bandProgress[b.id] || 0;
+                        const pct = Math.min(100, Math.round((w / dur) * 100));
+                        const isMust = mustIds.has(b.id);
+                        const isLive = b.start <= G.time && G.time < b.end;
+                        const startsIn = b.start - G.time;
+                        const isSoon = startsIn > 0 && startsIn <= SOON_FLASH_MIN;
+                        const stageColor = STAGE_COLORS[si % STAGE_COLORS.length];
+
+                        const block = document.createElement("div");
+                        block.className = "gantt-block" + (isMust ? " must" : "") + (isLive ? " live" : "") + (isSoon ? " soon" : "");
+                        block.style.left = leftPct + "%";
+                        block.style.width = widthPct + "%";
+                        block.title = b.name + " — " + fmtClock(b.start) + "–" + fmtClock(b.end) + (isMust ? " (must-not-miss)" : "");
+
+                        const base = document.createElement("div");
+                        base.className = "fill-base";
+                        base.style.background = stageColor;
+                        block.appendChild(base);
+
+                        if (pct > 0) {
+                            const watchedFill = document.createElement("div");
+                            watchedFill.className = "fill-watched";
+                            watchedFill.style.width = pct + "%";
+                            watchedFill.style.background = isMust ? "var(--gold)" : stageColor;
+                            block.appendChild(watchedFill);
+                        }
+
+                        const lbl = document.createElement("div");
+                        lbl.className = "label";
+                        lbl.textContent = (isMust ? "★ " : "") + b.name;
+                        block.appendChild(lbl);
+
+                        row.appendChild(block);
+                    });
+                    el.appendChild(row);
+                });
+
+                const nowPct = clamp((G.time - G.dayOpen) / span * 100, 0, 100);
+                const nowLine = document.createElement("div");
+                nowLine.className = "gantt-now-line";
+                nowLine.style.left = nowPct + "%";
+                const flag = document.createElement("div");
+                flag.className = "flag";
+                flag.textContent = fmtClock(G.time);
+                nowLine.appendChild(flag);
+                el.appendChild(nowLine);
+
+                // keep the current-time marker in view when the chart scrolls horizontally on small screens
+                const wrap = el.parentElement;
+                if (wrap && wrap.scrollWidth > wrap.clientWidth) {
+                    const targetScroll = (nowPct / 100) * el.scrollWidth - wrap.clientWidth / 2;
+                    wrap.scrollLeft = clamp(targetScroll, 0, el.scrollWidth - wrap.clientWidth);
+                }
+            }
+
+            /* ============================== RENDER: CELL INFO ============================== */
+            /* ============================== RENDER: STAGE LABELS (name + now/next, overlaid on the grid) ============================== */
+            function renderStageKey() {
+                const el = document.getElementById("stage-key");
+                el.innerHTML = "";
+                G.stages.forEach((s, i) => {
+                    const col = STAGE_COLORS[i % STAGE_COLORS.length];
+                    const now = currentBandAt(i);
+                    const next = nextBandAt(i, G.time);
+
+                    const item = document.createElement("div");
+                    item.className = "key-item" + (now ? " live" : "");
+                    if (now) item.style.boxShadow = "0 0 0 1px " + col + " inset";
+
+                    const swatch = document.createElement("div");
+                    swatch.className = "key-swatch";
+                    swatch.style.background = col;
+                    item.appendChild(swatch);
+
+                    const body = document.createElement("div");
+                    body.className = "key-body";
+                    const nowLine = now ? ("▶ " + now.name) : (next ? ("next: " + next.name + " " + fmtClock(next.start)) : "done for today");
+                    body.innerHTML = "<b>" + (i + 1) + ". " + G.stageNames[i] + "</b><span class='key-nownext'>" + nowLine + "</span>";
+                    item.appendChild(body);
+
+                    el.appendChild(item);
+                });
+            }
+
+            /* ============================== RENDER: BAND VIDEO ============================== */
+            let currentVideoKey = null; // tracks which band's set is currently loaded so we don't restart it every render
+            let lastPulsedScore = 0; // tracks the score last shown, so the number only pulses when it actually goes up
+            function renderVideo() {
+                const panel = document.getElementById("video-panel");
+                const poi = poiAt(G.player.x, G.player.y);
+                const activeBand = (poi && poi.type === "stage") ? currentBandAt(poi.index) : null;
+                const url = activeBand ? BAND_VIDEO_MAP.get(activeBand.name.toLowerCase().trim()) : null;
+
+                if (activeBand && url) {
+                    const videoId = youTubeIdFromUrl(url);
+                    if (videoId) {
+                        if (currentVideoKey !== activeBand.id) {
+                            currentVideoKey = activeBand.id;
+                            // No mute param here on purpose: this call happens synchronously inside the same keypress/click
+                            // that moved you onto the stage, so browsers are far more willing to allow sound on a fresh
+                            // load than they would be for a video started on a timer or on page load. If a particular
+                            // browser still blocks it, the player falls back to muted and the built-in YouTube controls
+                            // (bottom-left speaker icon) are one tap away — there's no reliable way to force sound past
+                            // that without it being a user gesture, so this is the closest we can get automatically.
+                            document.getElementById("video-frame").src = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&rel=0&playsinline=1";
+                            document.getElementById("video-caption").textContent = "🎥 " + activeBand.name + " — official video";
+                        }
+                        panel.classList.add("playing");
+                        return;
+                    }
+                }
+                if (currentVideoKey !== null) {
+                    currentVideoKey = null;
+                    document.getElementById("video-frame").src = "";
+                    document.getElementById("video-caption").textContent = "Nothing playing right now";
+                }
+                panel.classList.remove("playing");
+            }
+
+            /* ============================== MAIN RENDER ============================== */
+            function renderAll() {
+                drawField(); renderStageKey(); renderLegend(); renderHUD(); renderMustMiss(); renderGantt(); renderVideo();
+            }
+
+            /* ============================== END OF DAY / END OF FESTIVAL ============================== */
+            function endDay() {
+                G.over = true;
+                const fullBands = countFullBands();
+                const partBands = countPartialBands();
+                const optimalBands = G.solverResult.chain.length;
+                const optimalSteps = G.solverResult.totalSteps;
+                const mustCaught = G.mustNotMiss.filter(m => (G.bandProgress[m.act.id] || 0) >= (m.act.end - m.act.start) * 0.98).length;
+
+                SESSION.cumulative.steps += G.steps;
+                SESSION.cumulative.pints += G.pints;
+                SESSION.cumulative.bandsFull += fullBands;
+                SESSION.cumulative.bandsPart += partBands;
+                SESSION.cumulative.mustCaught += mustCaught;
+                SESSION.cumulative.mustTotal += 3;
+                SESSION.cumulative.optimalBands += optimalBands;
+                SESSION.cumulative.optimalSteps += optimalSteps;
+                SESSION.cumulative.coinsCollected += G.coinsCollected;
+                SESSION.cumulative.score += computeScore();
+                SESSION.cumulative.milkCollected += G.milkCollected;
+                SESSION.cumulative.crowdSurfCollected += G.crowdSurfCollected;
+                if (G.easterEggClaimed) SESSION.cumulative.easterEggs.push(G.easterEggItem);
+                SESSION.cumulative.merchBought = SESSION.cumulative.merchBought.concat(G.merchBought);
+                SESSION.dayHistories.push({
+                    label: G.dayLabel, grid: G.grid, entrance: G.entrance, stages: G.stages, obstacleIcons: G.obstacleIcons,
+                    bars: G.bars, toilets: G.toilets, merchStands: G.merchStands, coinPickups: G.coinPickups,
+                    path: G.path, solverResult: G.solverResult, bfsEntrance: G.bfsEntrance, bfsStages: G.bfsStages,
+                    steps: G.steps, optimalSteps, fullBands, optimalBands, mustCaught
+                });
+
+                showDayEndCard(fullBands, partBands, optimalBands, optimalSteps, mustCaught);
+            }
+
+            function verdictFor(ratio) {
+                if (ratio >= 0.95) return ["Festival Legend", "You basically ran the tightest route possible."];
+                if (ratio >= 0.7) return ["Solid Day Out", "A good day inside, with a bit of wandering."];
+                if (ratio >= 0.45) return ["Bit of a Wander", "You saw a fair bit, but the venue beat you a few times."];
+                return ["Mostly Queued for the Loo", "Rough day. The bar and toilets won this one."];
+            }
+
+            function showDayEndCard(fullBands, partBands, optimalBands, optimalSteps, mustCaught) {
+                const ratio = optimalBands > 0 ? fullBands / optimalBands : 1;
+                const [verdict, verdictSub] = verdictFor(ratio);
+                const isLastDay = G.dayIndex >= DAY_LINEUP.length - 1;
+
+                const card = document.getElementById("end-card");
+                card.innerHTML = "";
+
+                const h = document.createElement("h2");
+                h.textContent = G.dayShort + " done";
+                card.appendChild(h);
+                const p = document.createElement("p");
+                p.textContent = "Doors shut at " + fmtClock(G.dayClose) + ". Here's how " + G.dayShort + " went.";
+                card.appendChild(p);
+
+                const vEl = document.createElement("div"); vEl.className = "verdict"; vEl.textContent = verdict; card.appendChild(vEl);
+                const vSub = document.createElement("div"); vSub.className = "verdict-sub"; vSub.textContent = verdictSub; card.appendChild(vSub);
+
+                const grid = document.createElement("div"); grid.className = "summary-grid";
+                [[computeScore(), "Score"], [fullBands, "Full sets caught"], [partBands, "Partial sets"], [mustCaught + "/3", "Must-not-miss caught"],
+                [G.pints, "Pints had"], [G.loos, "Free loo visits"], [G.peedSelf, "Times you didn't make it"],
+                [G.coinsCollected, "Coins collected"], [G.merchBought.length, "Merch bought"],
+                [G.milkCollected, "Milk grabbed"], [G.crowdSurfCollected, "Crowd surfs caught"],
+                [G.easterEggClaimed ? "Yes" : "No", "Secret found"],
+                [G.steps, "Steps taken"]].forEach(([num, label]) => {
+                    const c = document.createElement("div"); c.className = "summary-cell";
+                    c.innerHTML = "<b>" + num + "</b><span>" + label + "</span>"; grid.appendChild(c);
+                });
+                card.appendChild(grid);
+                if (G.merchBought.length) {
+                    const mp = document.createElement("p");
+                    mp.textContent = "Picked up: " + G.merchBought.join(", ") + ".";
+                    card.appendChild(mp);
+                }
+                if (G.easterEggClaimed) {
+                    const ep = document.createElement("p");
+                    ep.textContent = "You cracked the old cheat code and walked away with a " + G.easterEggItem + " (+" + EASTER_EGG_BONUS + " pts).";
+                    card.appendChild(ep);
+                }
+
+                const h3b = document.createElement("h3"); h3b.textContent = "The lineup"; card.appendChild(h3b);
+                const bl = document.createElement("div"); bl.className = "bandlist";
+                const mustIds = new Set(G.mustNotMiss.map(m => m.act.id));
+                const allBands = []; G.schedules.forEach(list => list.forEach(b => allBands.push(b)));
+                allBands.sort((a, b) => a.start - b.start);
+                allBands.forEach(b => {
+                    const dur = b.end - b.start, w = G.bandProgress[b.id] || 0;
+                    let cls = "row miss", tag = "missed";
+                    if (w >= dur * 0.98) { cls = "row full"; tag = "caught in full"; } else if (w > 0) { cls = "row part"; tag = "part-seen"; }
+                    const pts = Math.round(pointsForBand(b, mustIds));
+                    const row = document.createElement("div"); row.className = cls;
+                    const star = mustIds.has(b.id) ? "<span class='star'>★</span>" : "";
+                    row.innerHTML = "<span>" + star + b.name + " — " + G.stageNames[b.stage] + "</span><span>" + tag + " · " + pts + " pts</span>";
+                    bl.appendChild(row);
+                });
+                card.appendChild(bl);
+
+                const ctaRow = document.createElement("div"); ctaRow.className = "cta-row";
+                const nextBtn = document.createElement("button");
+                nextBtn.className = "act primary"; nextBtn.style.flex = "1";
+                if (isLastDay) {
+                    nextBtn.textContent = "See the weekend summary";
+                    nextBtn.onclick = () => { showFestivalSummary(); };
+                } else {
+                    nextBtn.textContent = "Continue to " + DAY_LINEUP[G.dayIndex + 1].short;
+                    nextBtn.onclick = () => {
+                        document.getElementById("overlay-end").classList.add("hidden");
+                        prepareDaySession(G.dayIndex + 1);
+                        onbMode = "day";
+                        onbIndex = 0;
+                        renderOnboarding();
+                        document.getElementById("overlay-onboarding").classList.remove("hidden");
+                    };
+                }
+                ctaRow.appendChild(nextBtn);
+                card.appendChild(ctaRow);
+
+                document.getElementById("overlay-end").classList.remove("hidden");
+            }
+
+            function showFestivalSummary() {
+                const c = SESSION.cumulative;
+                const ratio = c.optimalBands > 0 ? c.bandsFull / c.optimalBands : 1;
+                const [verdict, verdictSub] = verdictFor(ratio);
+
+                const card = document.getElementById("end-card");
+                card.innerHTML = "";
+                const h = document.createElement("h2"); h.textContent = "The weekend's over"; card.appendChild(h);
+                const p = document.createElement("p"); p.textContent = "Two days, three stages a day. Here's the whole festival."; card.appendChild(p);
+                const vEl = document.createElement("div"); vEl.className = "verdict"; vEl.textContent = verdict; card.appendChild(vEl);
+                const vSub = document.createElement("div"); vSub.className = "verdict-sub"; vSub.textContent = verdictSub; card.appendChild(vSub);
+
+                const grid = document.createElement("div"); grid.className = "summary-grid";
+                [[c.score, "Weekend score"], [c.bandsFull, "Full sets caught"], [c.bandsPart, "Partial sets"], [c.mustCaught + "/" + c.mustTotal, "Must-not-miss caught"],
+                [c.pints, "Pints had"], [c.coinsCollected, "Coins collected"], [c.merchBought.length, "Merch bought"],
+                [c.milkCollected, "Milk grabbed"], [c.crowdSurfCollected, "Crowd surfs caught"],
+                [c.easterEggs.length + "/2", "Secrets found"],
+                [c.steps, "Total steps"]].forEach(([num, label]) => {
+                    const cell = document.createElement("div"); cell.className = "summary-cell";
+                    cell.innerHTML = "<b>" + num + "</b><span>" + label + "</span>"; grid.appendChild(cell);
+                });
+                card.appendChild(grid);
+                if (c.merchBought.length) {
+                    const mp = document.createElement("p");
+                    mp.textContent = "Merch haul: " + c.merchBought.join(", ") + ".";
+                    card.appendChild(mp);
+                }
+
+                const ctaRow = document.createElement("div"); ctaRow.className = "cta-row";
+                const again = document.createElement("button");
+                again.className = "act primary"; again.style.flex = "1"; again.textContent = "Play the weekend again";
+                again.onclick = () => {
+                    SESSION.cumulative = { steps: 0, pints: 0, bandsFull: 0, bandsPart: 0, mustCaught: 0, mustTotal: 0, optimalBands: 0, optimalSteps: 0, coinsCollected: 0, score: 0, merchBought: [], easterEggs: [], milkCollected: 0, crowdSurfCollected: 0 };
+                    SESSION.dayHistories = [];
+                    document.getElementById("overlay-end").classList.add("hidden");
+                    prepareDaySession(1);
+                    onbMode = "full";
+                    onbIndex = 0;
+                    renderOnboarding();
+                    document.getElementById("overlay-onboarding").classList.remove("hidden");
+                };
+                ctaRow.appendChild(again);
+                card.appendChild(ctaRow);
+
+                document.getElementById("overlay-end").classList.remove("hidden");
+            }
+
+            /* ============================== ONBOARDING CAROUSEL ============================== */
+            let onbMode = "full"; // "full" (objective+howto+lineup+mustmiss) or "day" (lineup+mustmiss only, used between days)
+            let onbIndex = 0;
+
+            function onbPanelCount() { return onbMode === "full" ? 4 : 2; }
+
+            function renderPanelLineup(card) {
+                const h2 = document.createElement("h2"); h2.textContent = PENDING.short + "'s lineup"; card.appendChild(h2);
+                const p = document.createElement("p"); p.textContent = "Three stages, running " + PENDING.short + "."; card.appendChild(p);
+                PENDING.stageNames.forEach((name, si) => {
+                    const sEl = document.createElement("div"); sEl.className = "prog-stage";
+                    const nameEl = document.createElement("div"); nameEl.className = "name"; nameEl.textContent = (si + 1) + ". " + name;
+                    sEl.appendChild(nameEl);
+                    const actsEl = document.createElement("div"); actsEl.className = "prog-acts";
+                    actsEl.innerHTML = PENDING.schedules[si].map(a => "<b>" + fmtClock(a.start) + "</b> " + a.name).join(" &nbsp;·&nbsp; ");
+                    sEl.appendChild(actsEl);
+                    card.appendChild(sEl);
+                });
+            }
+            function renderPanelMustMiss(card) {
+                const h2 = document.createElement("h2"); h2.textContent = "Don't miss these"; card.appendChild(h2);
+                const p = document.createElement("p"); p.textContent = "Three acts picked at random for " + PENDING.short + ". You'll get warnings as they approach — try to be there for the whole set."; card.appendChild(p);
+                PENDING.mustNotMiss.forEach(m => {
+                    const div = document.createElement("div"); div.className = "mm-preview";
+                    div.innerHTML = "<b>★ " + m.act.name + "</b><span>" + PENDING.stageNames[m.act.stage] + " · " + fmtClock(m.act.start) + "–" + fmtClock(m.act.end) + "</span>";
+                    card.appendChild(div);
+                });
+            }
+
+            function renderOnboarding() {
+                const card = document.getElementById("onb-card");
+                card.innerHTML = "";
+                const count = onbPanelCount();
+
+                if (onbMode === "full") {
+                    if (onbIndex === 0) {
+                        const logo = document.createElement("img");
+                        logo.className = "onb-logo";
+                        logo.src = document.querySelector(".logo-wrap img").src;
+                        logo.alt = "Damnation";
+                        card.appendChild(logo);
+                        const h2 = document.createElement("h2"); h2.textContent = "The objective"; card.appendChild(h2);
+                        const p1 = document.createElement("p");
+                        p1.textContent = "One indoor venue, two days, three stages a day. Route yourself between them, catch as many full sets as you can, and use as few steps as possible — at the end of each day you'll see how you compare to the most efficient route possible.";
+                        card.appendChild(p1);
+                        const p2 = document.createElement("p");
+                        p2.textContent = "Get to a stage while a band's on and stay for the whole set to properly catch it. Leave early and you'll only half-see it.";
+                        card.appendChild(p2);
+                    } else if (onbIndex === 1) {
+                        const h2 = document.createElement("h2"); h2.textContent = "How it works"; card.appendChild(h2);
+                        const ul = document.createElement("ul"); ul.className = "rule-list";
+                        [
+                            "Move with the arrows, WASD, or the on-screen D-pad. Every square you cross burns a few minutes.",
+                            "It's indoors and busy — chairs, crowds and gear block some routes, so you'll need to find a way round.",
+                            "Coins are scattered around the venue and keep reappearing through the day — walk over one and it's yours, automatically.",
+                            "Walking onto a bar buys a pint automatically (15 coins): full energy, worse bladder. Walking onto a merch stand buys the item on offer, once. You can't step onto either if you're short on coins.",
+                            "Toilets are always free to use, no coins needed — but each one has its own queue that builds up and dies down through the day. You can't step on until it's clear; the wait time shows right on the square.",
+                            "Energy affects your speed: run low and every step costs double the time, but keep it high (from pints — nothing else restores it) and steps only cost half the usual time.",
+                            "Watch for warnings when one of your three must-not-miss acts is close to starting — and watch for bands flashing in the lineup as their start time gets close.",
+                            "Every minute you spend watching a band scores points. Must-not-miss acts score triple per minute, plus a big bonus if you catch their whole set. Pints and merch add points too — the Lineup panel shows your live score and fills in behind each act as you watch it.",
+                            "There's an old trick some veterans swear by — a certain sequence of directions is rumoured to score a nice bonus, once a day.",
+                            "Keep an eye out for a glass of milk and a crowd-surf pickup — both appear randomly, sit for a bit, then vanish if you don't grab them. Milk halves your step time for 15 minutes; a crowd surf earns a free teleport straight to any stage."
+                        ].forEach(t => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+                        card.appendChild(ul);
+                    } else if (onbIndex === 2) {
+                        renderPanelLineup(card);
+                    } else if (onbIndex === 3) {
+                        renderPanelMustMiss(card);
+                    }
+                } else {
+                    if (onbIndex === 0) {
+                        renderPanelLineup(card);
+                    } else if (onbIndex === 1) {
+                        renderPanelMustMiss(card);
+                    }
+                }
+
+                const dots = document.createElement("div"); dots.className = "onb-dots";
+                for (let i = 0; i < count; i++) {
+                    const d = document.createElement("span");
+                    if (i === onbIndex) d.className = "active";
+                    dots.appendChild(d);
+                }
+                card.appendChild(dots);
+
+                const nav = document.createElement("div"); nav.className = "onb-nav";
+                const prevBtn = document.createElement("button");
+                prevBtn.className = "act ghost";
+                prevBtn.textContent = "Back";
+                prevBtn.disabled = onbIndex === 0;
+                prevBtn.onclick = () => { onbIndex = Math.max(0, onbIndex - 1); renderOnboarding(); };
+                nav.appendChild(prevBtn);
+
+                const nextBtn = document.createElement("button");
+                nextBtn.className = "act primary";
+                if (onbIndex === count - 1) {
+                    nextBtn.textContent = "Walk through the door — " + PENDING.short;
+                    nextBtn.onclick = () => beginGame();
+                } else {
+                    nextBtn.textContent = "Next";
+                    nextBtn.onclick = () => { onbIndex = Math.min(count - 1, onbIndex + 1); renderOnboarding(); };
+                }
+                nav.appendChild(nextBtn);
+                card.appendChild(nav);
+            }
+
+            /* ============================== INPUT ============================== */
+            window.addEventListener("keydown", (e) => {
+                if (!document.getElementById("overlay-onboarding").classList.contains("hidden")) return;
+                if (!document.getElementById("overlay-end").classList.contains("hidden")) return;
+                if (!document.getElementById("overlay-confirm-end").classList.contains("hidden")) return;
+                if (!document.getElementById("overlay-teleport").classList.contains("hidden")) return;
+                const k = e.key.toLowerCase();
+                if (k === "arrowup" || k === "w") pressDirection("up");
+                else if (k === "arrowdown" || k === "s") pressDirection("down");
+                else if (k === "arrowleft" || k === "a") pressDirection("left");
+                else if (k === "arrowright" || k === "d") pressDirection("right");
+                else if (k === " ") { e.preventDefault(); doWait(); }
+            });
+            let egKeyBuffer = [];
+            function pressDirection(dir) {
+                egKeyBuffer.push(dir);
+                if (egKeyBuffer.length > EASTER_EGG_SEQUENCE.length) egKeyBuffer.shift();
+                if (egKeyBuffer.length === EASTER_EGG_SEQUENCE.length && egKeyBuffer.every((d, i) => d === EASTER_EGG_SEQUENCE[i])) {
+                    egKeyBuffer = [];
+                    tryClaimEasterEgg();
+                }
+                const deltas = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+                const [dx, dy] = deltas[dir];
+                tryMove(dx, dy);
+            }
+            function tryClaimEasterEgg() {
+                if (!G || G.over) return;
+                if (G.easterEggClaimed) {
+                    toast("You've already cashed that trick in today.");
+                    return;
+                }
+                G.easterEggClaimed = true;
+                G.easterEggItem = EASTER_EGG_ITEMS[G.dayIndex] || "Secret Prize";
+                toast("🕹️ Old cheat code still works — scored a " + G.easterEggItem + " (+" + EASTER_EGG_BONUS + " pts).");
+                popScore(EASTER_EGG_BONUS, G.easterEggItem);
+                renderAll();
+            }
+            document.querySelectorAll(".dpad-grid button[data-dir]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const [dx, dy] = btn.dataset.dir.split(",").map(Number);
+                    const dir = dx === 0 && dy === -1 ? "up" : dx === 0 && dy === 1 ? "down" : dx === -1 && dy === 0 ? "left" : "right";
+                    pressDirection(dir);
+                });
+            });
+            document.getElementById("btn-wait").addEventListener("click", doWait);
+            document.getElementById("btn-end").addEventListener("click", () => {
+                if (G && !G.over) document.getElementById("overlay-confirm-end").classList.remove("hidden");
+            });
+            document.getElementById("btn-confirm-end-cancel").addEventListener("click", () => {
+                document.getElementById("overlay-confirm-end").classList.add("hidden");
+            });
+            document.getElementById("btn-confirm-end-yes").addEventListener("click", () => {
+                document.getElementById("overlay-confirm-end").classList.add("hidden");
+                if (G && !G.over) endDay();
+            });
+
+            function openTeleportOverlay() {
+                const list = document.getElementById("teleport-stage-list");
+                list.innerHTML = "";
+                G.stages.forEach((s, i) => {
+                    const btn = document.createElement("button");
+                    btn.className = "act primary";
+                    btn.style.textAlign = "left";
+                    btn.textContent = (i + 1) + ". " + G.stageNames[i];
+                    btn.onclick = () => {
+                        G.player.x = s.x; G.player.y = s.y;
+                        G.crowdSurfCharges--;
+                        document.getElementById("overlay-teleport").classList.add("hidden");
+                        toast("🙌 Crowd surfed straight to " + G.stageNames[i] + "!");
+                        renderAll();
+                    };
+                    list.appendChild(btn);
+                });
+                document.getElementById("overlay-teleport").classList.remove("hidden");
+            }
+            document.getElementById("btn-teleport").addEventListener("click", () => {
+                if (G && !G.over && G.crowdSurfCharges > 0) openTeleportOverlay();
+            });
+            document.getElementById("btn-teleport-cancel").addEventListener("click", () => {
+                document.getElementById("overlay-teleport").classList.add("hidden");
+            });
+
+            /* ============================== IDLE CLOCK (time passes even if you just stand there) ============================== */
+            setInterval(() => {
+                if (!G || G.over) return;
+                if (!document.getElementById("overlay-onboarding").classList.contains("hidden")) return;
+                if (!document.getElementById("overlay-end").classList.contains("hidden")) return;
+                if (!document.getElementById("overlay-confirm-end").classList.contains("hidden")) return;
+                if (!document.getElementById("overlay-teleport").classList.contains("hidden")) return;
+                advanceTime(IDLE_MIN_PER_TICK);
+                if (!G.over) renderAll();
+            }, IDLE_TICK_MS);
+
+            /* ============================== INIT ============================== */
+            prepareDaySession(1);
+            onbMode = "full";
+            onbIndex = 0;
+            renderOnboarding();
+            document.getElementById("overlay-end").classList.add("hidden");
+
+        })();
+    </script>
+</body>
+
+</html>
