@@ -275,47 +275,55 @@
             const BAR_MIN = 5;
             const TOILET_MIN = 3;
             const MERCH_MIN = 3;
-            const PEE_DECAY_PER_MIN = 0.16; // urgency rises over time — no natural relief, only a toilet clears it
+            const PEE_DECAY_PER_MIN = 0.32; // urgency rises over time — no natural relief, only a toilet clears it
             const PINT_PEE_INCREASE = 30; // drinking pushes urgency up
             const ENERGY_DECAY_PER_STEP = 1.9; // energy only ever comes back from a pint — no idle or watching recovery
             const HIGH_ENERGY_THRESHOLD = 60; // at or above this, steps only cost half the usual time
             const STARTING_COINS = 30;
-            const PRE_GAME_BUFFER_MIN = 5; // you're let in this many minutes before the lineup actually starts
+            const PRE_GAME_BUFFER_MIN = 10; // you're let in this many minutes before the lineup actually starts
             const EASTER_EGG_SEQUENCE = ["up", "down", "up", "down", "left", "right", "left", "right"];
-            const EASTER_EGG_BONUS = 50;
-            const PEE_ACCIDENT_PENALTY = 30; // deducted each time you don't make it to a toilet in time
+            const EASTER_EGG_BONUS = 150;
+            const PEE_ACCIDENT_PENALTY = 50; // deducted each time you don't make it to a toilet in time
 
             // two rare pickups that appear at a random empty square, sit for a while, and vanish if you don't grab them in time
             const MILK_LIFETIME_RANGE = [8, 15];   // minutes on the ground before it goes off
             const MILK_GAP_RANGE = [25, 45];       // minutes between one disappearing and the next appearing
-            const MILK_BUFF_DURATION = 15;        // minutes of halved step time after drinking it
-            const CROWDSURF_LIFETIME_RANGE = [8, 15];
-            const CROWDSURF_GAP_RANGE = [30, 55];  // rarer than milk
-            const EASTER_EGG_ITEMS = { 1: "Forum Pass", 2: "Glass of Milk" }; // day 1 = Saturday, day 2 = Sunday
-            const EASTER_EGG_SHORT = { 1: "Pass", 2: "Milk" };
+            const MILK_BUFF_DURATION = 25;        // minutes of halved step time after drinking it
+            const CROWDSURF_LIFETIME_RANGE = [25, 75];
+            const CROWDSURF_GAP_RANGE = [10, 35];  // rarer than milk
+            const EASTER_EGG_ITEMS = { 1: "Forum Pass", 2: "Hot Sauce" }; // day 1 = Saturday, day 2 = Sunday
+            const EASTER_EGG_SHORT = { 1: "Pass", 2: "Hot Sauce" };
             const PINT_COST = 15;
             const COIN_RESPAWN_MIN_GAP = 22, COIN_RESPAWN_MAX_GAP = 38;
             const COIN_GROUND_CAP = 6;
             const COIN_VALUE_RANGE = [5, 15];
-            const OBSTACLE_ICONS = ["🪑", "🧍", "👥", "📦", "🎒", "🔊"];
+            const OBSTACLE_IMAGE_SRCS = ["assets/img/obs/obst_fence.gif", "assets/img/obs/obst_gear.gif", "assets/img/obs/obst_podcast.gif", "assets/img/obs/obst_spill.gif",];
+            // "assets/img/obs/crowd_1.gif", "assets/img/obs/obst_fence.gif", "assets/img/obs/crowd_3.gif", "assets/img/obs/crowd_4.gif", "assets/img/obs/crowd_6.gif", "assets/img/obs/obst_fence.gif", "assets/img/obs/crowd_7.gif", "assets/img/obs/crowd_8.gif"
+            const OBSTACLE_IMAGES = {};
+            OBSTACLE_IMAGE_SRCS.forEach(src => {
+                const img = new Image();
+                img.src = src;
+                img.onload = () => drawField();
+                OBSTACLE_IMAGES[src] = img;
+            });
             // muted, distinguishable per-stage colours (used for tiles, key panel swatches, labels)
             const STAGE_COLORS = ["#a8453a", "#7a8a94", "#b8923f", "#8a6a8a", "#7a8a5a", "#9a6a6a"];
-            const MERCH_ITEMS = ["Site Tee", "Enamel Pin Set", "Bucket Hat", "Patch Bundle", "Battle Vest Patch", "Refillable Cup", "Mystery Grab Bag", "Tour Tote"];
+            const MERCH_ITEMS = ["Site Tee", "Enamel Pin Set", "Patch Bundle", "Battle Vest Patch", "Mystery Grab Bag", "Extra Towels", "Stickers", "Vinyl", "CD", "Tour Tote"];
 
             // band -> YouTube link, where known. Matched against the lineup case-insensitively.
             const BAND_VIDEOS = [
-                { "band": "Cabal", "url": null },
+                { "band": "Cabal", "url": "https://www.youtube.com/watch?v=OOHkCRAr9FM" },
                 { "band": "Holy Fawn", "url": "https://www.youtube.com/watch?v=yb7TEn8079I" },
                 { "band": "Car Bomb", "url": "https://www.youtube.com/watch?v=EA5eIAfutYU" },
                 { "band": "Eyehategod", "url": "https://www.youtube.com/watch?v=YTwZdaNEWIw" },
-                { "band": "Crowbar", "url": null },
-                { "band": "Health", "url": null },
+                { "band": "Crowbar", "url": "https://www.youtube.com/watch?v=bbibXGd4mxY" },
+                { "band": "Health", "url": "https://www.youtube.com/watch?v=-tvl8sDu9vo" },
                 { "band": "Carcass", "url": "https://www.youtube.com/watch?v=5KKYJD09qCk" },
-                { "band": "Cult of Luna", "url": null },
+                { "band": "Cult of Luna", "url": "https://www.youtube.com/watch?v=-A83MKfSyeQ" },
                 { "band": "Fange", "url": "https://www.youtube.com/watch?v=zuJgy4swTiI" },
-                { "band": "Machukha", "url": null },
-                { "band": "Ultha", "url": null },
-                { "band": "Wormed", "url": null },
+                { "band": "Machukha", "url": "https://www.youtube.com/watch?v=dBtEsunbxz4" },
+                { "band": "Ultha", "url": "https://www.youtube.com/watch?v=BdoSzUugbII" },
+                { "band": "Wormed", "url": "https://www.youtube.com/watch?v=Hggq8ab3ixQ" },
                 { "band": "Krallice", "url": null },
                 { "band": "Gorerotted", "url": null },
                 { "band": "Frontierer", "url": null },
@@ -323,14 +331,14 @@
                 { "band": "Intercourse", "url": null },
                 { "band": "Hundred Year Old Man", "url": null },
                 { "band": "Coltaine", "url": null },
-                { "band": "The Moth Gatherer", "url": null },
+                { "band": "The Moth Gatherer", "url": "https://www.youtube.com/watch?v=17zrVkjHsF0" },
                 { "band": "Rwake", "url": null },
                 { "band": "John Cxnnor", "url": null },
-                { "band": "Møl", "url": null },
-                { "band": "Pelican", "url": null },
-                { "band": "Hippotraktor", "url": null },
+                { "band": "Møl", "url": "https://www.youtube.com/watch?v=Aj4cQllhsGc" },
+                { "band": "Pelican", "url": "https://www.youtube.com/watch?v=egQ2KEACb_c" },
+                { "band": "Hippotraktor", "url": "https://www.youtube.com/watch?v=2xlv8wfWJuU" },
                 { "band": "LIK", "url": "https://www.youtube.com/watch?v=XgGZ1xt1Afw" },
-                { "band": "Worm", "url": null },
+                { "band": "Worm", "url": "https://www.youtube.com/watch?v=QM6E-wO3z9c" },
                 { "band": "Walls of Jericho", "url": null },
                 { "band": "Wolves in the Throne Room", "url": "https://www.youtube.com/watch?v=p9N-9DAlbYM" },
                 { "band": "Triptykon", "url": null },
@@ -359,9 +367,9 @@
             // scoring: every minute watched earns points, must-not-miss minutes earn more, and a full must-not-miss set earns a bonus
             const POINTS_PER_MIN = 1;
             const MUST_MISS_MULTIPLIER = 3;
-            const MUST_MISS_FULL_BONUS = 100;
-            const POINTS_PER_PINT = 5;
-            const POINTS_PER_MERCH = 20;
+            const MUST_MISS_FULL_BONUS = 250;
+            const POINTS_PER_PINT = 10;
+            const POINTS_PER_MERCH = 40;
             const SOON_FLASH_MIN = 10; // a band starting within this many minutes flashes in the lineup
 
             /* ============================== UTIL ============================== */
@@ -409,7 +417,7 @@
                     for (let c = 0; c < clusterCount; c++) {
                         const cx = rndInt(1, COLS - 2), cy = rndInt(1, ROWS - 2);
                         const w = rndInt(1, 2), h = rndInt(1, 2);
-                        const icon = choice(OBSTACLE_ICONS);
+                        const icon = choice(OBSTACLE_IMAGE_SRCS);
                         for (let dx = 0; dx < w; dx++) {
                             for (let dy = 0; dy < h; dy++) {
                                 const x = cx + dx, y = cy + dy;
@@ -933,7 +941,7 @@
                     G.crowdSurfPickup = null;
                     G.crowdSurfCharges = (G.crowdSurfCharges || 0) + 1;
                     G.crowdSurfCollected++;
-                    toast("🙌 Crowd surfed in — you've got a free teleport to any stage, use it whenever.");
+                    toast("🙌 Crowd surfed in — you've got instant travel to any stage, use it whenever.");
                 }
 
                 if (destPoi && destPoi.type === "bar") {
@@ -1032,14 +1040,14 @@
                 targetCtx.textAlign = "center"; targetCtx.textBaseline = "middle";
                 for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
                     if (gridObj[y][x] === 1) {
-                        // darker tile so a blocked square reads clearly even before you notice the icon,
-                        // and the icon itself stays subtle rather than competing with stages/bars/etc.
+                        // darker tile underneath so a blocked square reads clearly even before the image loads
                         targetCtx.fillStyle = "rgba(0,0,0,0.42)";
                         targetCtx.fillRect(x * cell, y * cell, cell, cell);
-                        const icon = obstacleIconsObj[key(x, y)] || "🚧";
-                        targetCtx.globalAlpha = 0.5;
-                        targetCtx.fillText(icon, x * cell + cell / 2, y * cell + cell / 2);
-                        targetCtx.globalAlpha = 1;
+                        const src = obstacleIconsObj[key(x, y)] || OBSTACLE_IMAGE_SRCS[0];
+                        const img = OBSTACLE_IMAGES[src];
+                        if (img && img.complete && img.naturalWidth) {
+                            targetCtx.drawImage(img, x * cell, y * cell, cell, cell);
+                        }
                     }
                 }
                 targetCtx.fillText("🚪", entranceObj.x * cell + cell / 2, entranceObj.y * cell + cell / 2);
@@ -1639,16 +1647,16 @@
                         const h2 = document.createElement("h2"); h2.textContent = "How it works"; card.appendChild(h2);
                         const ul = document.createElement("ul"); ul.className = "rule-list";
                         [
-                            "Move with the arrows, WASD, or the on-screen D-pad. Every square you cross burns a few minutes.",
+                            "Move with the arrows/WASD/or the on-screen D-pad. Every square you cross burns a few minutes.",
                             "It's indoors and busy — chairs, crowds and gear block some routes, so you'll need to find a way round.",
-                            "Coins are scattered around the venue and keep reappearing through the day — walk over one and it's yours, automatically.",
+                            "Coins are scattered around the venue and keep reappearing through the day — you'll need them for the bar.",
                             "Walking onto a bar buys a pint automatically (15 coins): full energy, worse bladder. Walking onto a merch stand buys the item on offer, once. You can't step onto either if you're short on coins.",
-                            "Toilets are always free to use, no coins needed — but each one has its own queue that builds up and dies down through the day. You can't step on until it's clear; the wait time shows right on the square.",
+                            "Toilets are always free to use, no coins needed — but each one has its own queue that builds up and dies down through the day",
                             "Energy affects your speed: run low and every step costs double the time, but keep it high (from pints — nothing else restores it) and steps only cost half the usual time.",
                             "Watch for warnings when one of your three must-not-miss acts is close to starting — and watch for bands flashing in the lineup as their start time gets close.",
                             "Every minute you spend watching a band scores points. Must-not-miss acts score triple per minute, plus a big bonus if you catch their whole set. Pints and merch add points too — the Lineup panel shows your live score and fills in behind each act as you watch it.",
                             "There's an old trick some veterans swear by — a certain sequence of directions is rumoured to score a nice bonus, once a day.",
-                            "Keep an eye out for a glass of milk and a crowd-surf pickup — both appear randomly, sit for a bit, then vanish if you don't grab them. Milk halves your step time for 15 minutes; a crowd surf earns a free teleport straight to any stage."
+                            "Keep an eye out for a glass of milk and a crowd-surf pickup — both appear randomly, sit for a bit, then vanish if you don't grab them. Milk halves your step time for 15 minutes; a crowd surf earns instant travel to any stage — handy when you are short on time"
                         ].forEach(t => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
                         card.appendChild(ul);
                     } else if (onbIndex === 2) {
