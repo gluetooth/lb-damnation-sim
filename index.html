@@ -23,18 +23,15 @@
 
 <body>
 
-    <header>
-        <div class="logo-wrap">
-            <img src="assets/img/damnation.webp" alt="Damnation">
-            <!--div class="logo-sub">See bands, buy pints, buy merch for points. Don't piss yourself.</div-->
-        </div>
-        <div class="day-flag" id="day-flag">Not started</div>
-    </header>
-
     <div class="layout">
         <div id="stage-wrap" class="panel">
-            <h2>BEC Arena<span class="rule"></span><span id="day-status"
-                    style="font-weight:400; letter-spacing:0; color:var(--paper-dim); font-size:11px;"></span></h2>
+            <div class="stage-top">
+                <div class="logo-wrap">
+                    <img src="assets/img/damnation.webp" alt="Damnation">
+                </div>
+                <h2>BEC Arena<span class="rule"></span><span class="day-flag" id="day-flag">Not started</span>
+                </h2>
+            </div>
 
             <div class="vs-hud">
                 <div class="vs-bar-block">
@@ -82,31 +79,9 @@
             </div>
         </div>
 
-        <div id="side-col">
-            <div class="panel" style="margin-bottom:14px;">
-                <h2>Your day<span class="rule"></span></h2>
-                <div class="stat-grid">
-                    <div>Score <b id="s-score" class="coin">0</b></div>
-                    <div>Steps <b id="s-steps">0</b></div>
-                    <div>Pints <b id="s-pints">0</b></div>
-                    <div>Bands seen <b id="s-bands">0</b></div>
-                    <div>Merch <b id="s-merch">0</b></div>
-                    <div>Secret <b id="s-secret">—</b></div>
-                </div>
-                <div id="log"></div>
-            </div>
-
-            <div class="panel" style="margin-bottom:14px;">
-                <h2>Don't miss today<span class="rule"></span></h2>
-                <div id="mustmiss"></div>
-            </div>
-
-            <div id="legend"></div>
-        </div>
-
         <div class="panel" id="timeline-panel">
             <h2>Lineup<span class="rule"></span><span id="score-badge">0 pts</span></h2>
-            <div id="status-bar">Getting ready…</div>
+            <div id="status-bar"><span id="status-bar-text">Getting ready…</span></div>
             <div class="gantt-wrap">
                 <div class="gantt-inner" id="gantt-inner"></div>
             </div>
@@ -118,6 +93,37 @@
             </div>
         </div>
 
+        <div id="side-col">
+            <details class="panel accordion" open>
+                <summary>Your day<span class="rule"></span></summary>
+                <div class="accordion-body">
+                    <div class="stat-grid">
+                        <div>Score <b id="s-score" class="coin">0</b></div>
+                        <div>Steps <b id="s-steps">0</b></div>
+                        <div>Pints <b id="s-pints">0</b></div>
+                        <div>Bands seen <b id="s-bands">0</b></div>
+                        <div>Merch <b id="s-merch">0</b></div>
+                        <div>Secret <b id="s-secret">—</b></div>
+                    </div>
+                    <div id="log"></div>
+                </div>
+            </details>
+
+            <details class="panel accordion" open>
+                <summary>Don't miss today<span class="rule"></span></summary>
+                <div class="accordion-body">
+                    <div id="mustmiss"></div>
+                </div>
+            </details>
+
+            <details class="panel accordion" open>
+                <summary>Legend<span class="rule"></span></summary>
+                <div class="accordion-body">
+                    <div id="legend"></div>
+                </div>
+            </details>
+        </div>
+
         <div id="video-panel">
             <div class="video-frame-wrap">
                 <iframe id="video-frame" src="" title="Band video" frameborder="0" allow="autoplay; encrypted-media"
@@ -127,15 +133,6 @@
             </div>
             <div class="video-caption" id="video-caption">Nothing playing right now</div>
         </div>
-    </div>
-
-    <!-- fixed floating D-pad, shown on mobile only (CSS controls visibility) -->
-    <div id="dpad-fixed" class="dpad-grid">
-        <button class="u" data-dir="0,-1">▲</button>
-        <button class="l" data-dir="-1,0">◀</button>
-        <button class="c" disabled></button>
-        <button class="r" data-dir="1,0">▶</button>
-        <button class="d" data-dir="0,1">▼</button>
     </div>
 
     <footer>Lineup is the real Damnation 2026 timetable, split across the two festival days. Venue layout, obstacles,
@@ -177,6 +174,23 @@
     <script>
         (function () {
             "use strict";
+
+            // side-col panels are plain always-open panels on desktop but real accordions on mobile.
+            // Re-sync (not just close) every time the viewport crosses the breakpoint — initial load,
+            // resize, or orientation change — so a browser widened back past it re-opens them too.
+            // (Chrome's native <details> paints nothing for a closed panel's content regardless of any
+            // CSS override, so desktop must keep the actual `open` attribute set, not just look open.)
+            if (window.matchMedia) {
+                const mobileMQ = window.matchMedia("(max-width:820px)");
+                const syncAccordions = () => {
+                    document.querySelectorAll("#side-col > details.accordion").forEach(d => {
+                        d.open = !mobileMQ.matches;
+                    });
+                };
+                syncAccordions();
+                if (mobileMQ.addEventListener) mobileMQ.addEventListener("change", syncAccordions);
+                else if (mobileMQ.addListener) mobileMQ.addListener(syncAccordions); // older Safari
+            }
 
             /* ============================== REAL LINEUP DATA ============================== */
             // Times in minutes-of-day (12:00 = 720). Split across the two real festival days.
@@ -991,11 +1005,21 @@
             // with a brief flash to draw the eye to the update. Also logs to history.
             function toast(msg, warn) {
                 const el = document.getElementById("status-bar");
-                el.textContent = msg;
+                const textEl = document.getElementById("status-bar-text");
+                textEl.textContent = msg;
                 el.classList.toggle("warn", !!warn);
                 el.classList.remove("flash");
                 void el.offsetWidth; // restart the flash animation
                 el.classList.add("flash");
+
+                // only marquee when the message is too long to fit on one line
+                textEl.classList.remove("marquee");
+                textEl.style.animationDuration = "";
+                void textEl.offsetWidth;
+                if (textEl.scrollWidth > el.clientWidth) {
+                    textEl.style.animationDuration = Math.max(6, textEl.scrollWidth / 55) + "s";
+                    textEl.classList.add("marquee");
+                }
                 pushLog(msg);
             }
 
@@ -1213,8 +1237,6 @@
                 const teleportBtn = document.getElementById("btn-teleport");
                 teleportBtn.textContent = "🙌 Crowd surf (" + (G.crowdSurfCharges || 0) + ")";
                 teleportBtn.disabled = !(G.crowdSurfCharges > 0);
-
-                document.getElementById("day-status").textContent = fmtClock(G.time) + " · " + (G.dayClose - G.time > 0 ? fmtDuration(G.dayClose - G.time) + " left" : "closed");
             }
             function countFullBands() {
                 let n = 0;

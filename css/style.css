@@ -54,18 +54,19 @@
       display: block;
   }
 
-  /* ---------- header ---------- */
-  header {
-      width: 100%;
-      max-width: 1040px;
+  /* ---------- header (logo + round flag, folded into the arena panel's top row) ---------- */
+  .stage-top {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: 12px;
-      /*border-bottom: 2px solid var(--line);*/
-      padding-bottom: 12px;
-      margin-bottom: 14px;
       flex-wrap: wrap;
+      margin-bottom: 10px;
+  }
+
+  #stage-wrap .stage-top h2 {
+      flex: 1;
+      min-width: 140px;
+      margin: 0;
   }
 
   .logo-wrap {
@@ -73,10 +74,11 @@
       align-items: center;
       gap: 12px;
       min-width: 0;
+      flex: 0 0 auto;
   }
 
   .logo-wrap img {
-      width: min(260px, 46vw);
+      width: 130px;
       height: auto;
       filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .5));
   }
@@ -140,13 +142,13 @@
           grid-template-columns: 1fr;
           grid-template-areas:
               "canvas"
-              "sidebar"
               "timeline"
+              "sidebar"
               "video";
       }
 
-      body {
-          padding-bottom: 190px;
+      #timeline-panel {
+          padding: 10px;
       }
 
       #field {
@@ -178,6 +180,69 @@
       flex: 1;
       height: 1px;
       background: var(--line);
+  }
+
+  /* ---------- accordion panels: plain always-open panels above the breakpoint, real collapsible accordions on mobile ---------- */
+  #side-col>*+* {
+      margin-top: 14px;
+  }
+
+  .accordion>summary {
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      margin: 0;
+      color: var(--paper-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      list-style: none;
+      cursor: default;
+      pointer-events: none;
+  }
+
+  .accordion>summary::-webkit-details-marker {
+      display: none;
+  }
+
+  .accordion>summary .rule {
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+  }
+
+  .accordion>summary::after {
+      content: '';
+  }
+
+  .accordion>.accordion-body {
+      display: block;
+      margin-top: 10px;
+  }
+
+  @media (max-width:820px) {
+      .accordion>summary {
+          cursor: pointer;
+          pointer-events: auto;
+      }
+
+      .accordion>summary::after {
+          content: '▸';
+          font-size: 10px;
+          color: var(--paper-dim);
+          margin-left: 4px;
+          display: inline-block;
+          transition: transform .15s ease;
+      }
+
+      .accordion[open]>summary::after {
+          transform: rotate(90deg);
+      }
+
+      .accordion>.accordion-body {
+          display: revert;
+      }
   }
 
   /* ---------- Street-Fighter style vitals HUD ---------- */
@@ -243,8 +308,11 @@
 
   .vs-sub {
       font-size: 10px;
+      line-height: 1.3;
       color: var(--paper-dim);
       margin-top: 3px;
+      /* reserved for the tallest possible badge/eta text (2 lines) so swapping messages never reflows the HUD */
+      min-height: 34px;
   }
 
   .vs-sub.right {
@@ -291,6 +359,60 @@
       font-weight: 600;
   }
 
+  /* keep the vitals HUD on a single row on mobile — the 3 blocks shrink instead of wrapping to a 2nd row */
+  @media (max-width:820px) {
+      .vs-hud {
+          flex-wrap: nowrap;
+          gap: 6px;
+      }
+
+      .vs-bar-block {
+          min-width: 0;
+      }
+
+      .vs-clock {
+          min-width: 0;
+          padding: 0 8px;
+      }
+
+      .vs-bar-label {
+          font-size: 9.5px;
+      }
+
+      .vs-clock .time {
+          font-size: 18px;
+      }
+
+      .vs-sub {
+          font-size: 9px;
+          min-height: 30px;
+      }
+  }
+
+  @media (max-width:480px) {
+      .vs-hud {
+          gap: 4px;
+      }
+
+      .vs-clock {
+          padding: 0 5px;
+      }
+
+      .vs-clock .time {
+          font-size: 15px;
+      }
+
+      .vs-bar-label {
+          font-size: 8.5px;
+          letter-spacing: .5px;
+      }
+
+      .vs-sub {
+          font-size: 8px;
+          min-height: 26px;
+      }
+  }
+
   /* ---------- persistent status bar ---------- */
   #status-bar {
       padding: 9px 12px;
@@ -301,15 +423,38 @@
       color: var(--paper);
       min-height: 18px;
       margin-bottom: 10px;
+      overflow: hidden;
+      white-space: nowrap;
   }
 
   #status-bar.warn {
       border-color: var(--warn);
-      color: var(--warn);
+      /* text stays --paper (white) even when warning — red-on-dark is hard to read */
   }
 
   #status-bar.flash {
       animation: statusflash .5s ease;
+  }
+
+  #status-bar-text {
+      display: inline-block;
+  }
+
+  #status-bar-text.marquee {
+      padding-left: 100%;
+      animation-name: statusmarquee;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+  }
+
+  @keyframes statusmarquee {
+      from {
+          transform: translateX(0);
+      }
+
+      to {
+          transform: translateX(-100%);
+      }
   }
 
   /* ---------- band video (plays while watching a set with a known video) ---------- */
@@ -474,7 +619,7 @@
       line-height: 1.3;
   }
 
-  @media (max-width:640px) {
+  @media (max-width:820px) {
       .field-row {
           flex-direction: column;
       }
@@ -483,24 +628,17 @@
           width: 100%;
       }
 
-      #stage-key {
-          flex-direction: row;
-          flex-wrap: wrap;
-      }
-
+      /* full-width stage-key rows wrap far less than the old 2-up layout did */
       #stage-key .key-item {
-          flex: 1 1 45%;
-          min-width: 130px;
+          width: 100%;
       }
 
+      /* d-pad and action buttons split the row 50/50 instead of the d-pad's natural width */
       .key-col .controls-row {
-          flex-direction: row;
-          align-items: flex-end;
-          flex-wrap: wrap;
-      }
-
-      .key-col .controls-row #dpad {
-          margin: 0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          align-items: start;
+          gap: 10px;
       }
   }
 
@@ -536,10 +674,6 @@
       gap: 7px 12px;
       font-size: 10px;
       color: var(--paper-dim);
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      padding: 12px;
   }
 
   #legend span {
@@ -602,35 +736,16 @@
       border-color: transparent;
   }
 
-  /* fixed floating D-pad for mobile: always reachable without scrolling, doesn't take flow space */
-  #dpad-fixed {
-      display: none;
-      position: fixed;
-      right: 14px;
-      bottom: 14px;
-      z-index: 45;
-      grid-template-columns: repeat(3, 50px);
-      grid-template-rows: repeat(3, 50px);
-      gap: 5px;
-      background: rgba(23, 11, 11, .88);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 8px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, .5);
-      backdrop-filter: blur(3px);
-  }
-
-  #dpad-fixed button {
-      font-size: 19px;
-  }
-
   @media (max-width:820px) {
-      #dpad-fixed {
-          display: grid;
+      /* slightly smaller than the desktop d-pad so it comfortably shares the row with the action buttons */
+      #dpad {
+          grid-template-columns: repeat(3, 38px);
+          grid-template-rows: repeat(3, 38px);
+          gap: 3px;
       }
 
-      .key-col #dpad {
-          display: none;
+      .dpad-grid button {
+          font-size: 15px;
       }
   }
 
@@ -1511,7 +1626,7 @@
 
   @media (max-width:480px) {
       body {
-          padding: 10px 6px 170px;
+          padding: 10px 6px 32px;
       }
 
       .panel {
@@ -1526,10 +1641,13 @@
           font-size: 17px;
       }
 
-      #dpad-fixed {
-          grid-template-columns: repeat(3, 42px);
-          grid-template-rows: repeat(3, 42px);
-          right: 8px;
-          bottom: 8px;
+      #dpad {
+          grid-template-columns: repeat(3, 32px);
+          grid-template-rows: repeat(3, 32px);
+          gap: 2px;
+      }
+
+      .dpad-grid button {
+          font-size: 13px;
       }
   }
