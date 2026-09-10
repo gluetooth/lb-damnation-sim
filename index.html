@@ -79,9 +79,9 @@
             </div>
         </div>
 
-        <!-- mobile-only: Stage Key / Lineup / Your Day / Don't Miss / Legend share one swipeable carousel
-             instead of stacking; on desktop this stays empty and hidden — those panels live in their
-             normal spots below instead (moved there and back by JS as the viewport crosses the breakpoint) -->
+        <!-- mobile-only: Lineup / Stage Key / Your Day / Don't Miss / Legend / Video share one swipeable
+             carousel instead of stacking; on desktop this stays empty and hidden — those panels live in
+             their normal spots below instead (moved there and back by JS as the viewport crosses the breakpoint) -->
         <div id="mobile-carousel">
             <div class="carousel-tabs" id="carousel-tabs">
                 <button type="button" class="active">Lineup</button>
@@ -89,8 +89,10 @@
                 <button type="button">Your Day</button>
                 <button type="button">Don't Miss</button>
                 <button type="button">Legend</button>
+                <button type="button">Video</button>
             </div>
             <div class="carousel-track" id="carousel-track">
+                <div class="carousel-page"></div>
                 <div class="carousel-page"></div>
                 <div class="carousel-page"></div>
                 <div class="carousel-page"></div>
@@ -189,8 +191,8 @@
         (function () {
             "use strict";
 
-            // Stage Key, Lineup, Your Day, Don't Miss and Legend live in their normal desktop spots by
-            // default; on mobile they're moved wholesale (not cloned — keeps every id/handler intact)
+            // Lineup, Stage Key, Your Day, Don't Miss, Legend and Video live in their normal desktop spots
+            // by default; on mobile they're moved wholesale (not cloned — keeps every id/handler intact)
             // into one swipeable carousel instead, and moved back any time the viewport crosses back.
             (function initMobileCarousel() {
                 const layout = document.querySelector(".layout");
@@ -201,9 +203,10 @@
                 const yourDayPanel = document.getElementById("panel-yourday");
                 const dontMissPanel = document.getElementById("panel-dontmiss");
                 const legendPanel = document.getElementById("panel-legend");
+                const videoPanel = document.getElementById("video-panel");
 
                 const track = document.getElementById("carousel-track");
-                const pages = Array.from(track.children); // order: lineup, stages, your day, don't miss, legend
+                const pages = Array.from(track.children); // order: lineup, stages, your day, don't miss, legend, video
                 const tabs = Array.from(document.querySelectorAll("#carousel-tabs button"));
 
                 function setActiveTab(i) {
@@ -236,6 +239,7 @@
                         pages[2].appendChild(yourDayPanel);
                         pages[3].appendChild(dontMissPanel);
                         pages[4].appendChild(legendPanel);
+                        pages[5].appendChild(videoPanel);
                         track.scrollLeft = 0; // Lineup shows first every time the carousel (re)activates
                         setActiveTab(0);
                     } else {
@@ -244,6 +248,7 @@
                         sideCol.appendChild(yourDayPanel);
                         sideCol.appendChild(dontMissPanel);
                         sideCol.appendChild(legendPanel);
+                        layout.appendChild(videoPanel);
                     }
                 };
                 sync();

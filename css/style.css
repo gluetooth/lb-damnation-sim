@@ -147,8 +147,7 @@
           grid-template-columns: 1fr;
           grid-template-areas:
               "canvas"
-              "carousel"
-              "video";
+              "carousel";
       }
 
       #mobile-carousel {
@@ -157,16 +156,22 @@
           min-width: 0;
       }
 
-      /* their content lives in the carousel instead, on mobile — but #timeline-panel itself gets
-         moved INTO the carousel by JS, so it needs re-showing once it's there (ID selector alone
-         can't tell "in its desktop spot" from "relocated", so the override has to out-specificity it) */
+      /* their content lives in the carousel instead, on mobile — but #timeline-panel/#video-panel
+         themselves get moved INTO the carousel by JS, so they need re-showing once there (an ID
+         selector alone can't tell "in its desktop spot" from "relocated", so the override has to
+         out-specificity it) */
       #timeline-panel,
-      #side-col {
+      #side-col,
+      #video-panel {
           display: none;
       }
 
       #mobile-carousel #timeline-panel {
           display: block;
+      }
+
+      #mobile-carousel #video-panel {
+          display: flex;
       }
 
       #field {
@@ -204,7 +209,7 @@
       margin-top: 14px;
   }
 
-  /* ---------- mobile swipeable carousel: Stage Key / Lineup / Your Day / Don't Miss / Legend share one slot ---------- */
+  /* ---------- mobile swipeable carousel: Lineup / Stage Key / Your Day / Don't Miss / Legend / Video share one slot ---------- */
   @media (max-width:820px) {
       #mobile-carousel {
           background: var(--panel);
@@ -213,8 +218,10 @@
           padding: 10px;
       }
 
-      /* the moved-in panels' own chrome would double up with the carousel card's — strip it */
-      #mobile-carousel .panel {
+      /* the moved-in panels' own chrome would double up with the carousel card's — strip it
+         (#video-panel isn't .panel-classed, it carries the same background/border/padding directly) */
+      #mobile-carousel .panel,
+      #mobile-carousel #video-panel {
           background: none;
           border: none;
           border-radius: 0;
