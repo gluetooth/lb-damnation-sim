@@ -173,11 +173,6 @@
       #mobile-carousel #video-panel {
           display: flex;
       }
-
-      #field {
-          width: min(100%, 46vh);
-          margin: 0 auto;
-      }
   }
 
   .panel {
@@ -714,6 +709,14 @@
       background-size: 100%;
   }
 
+  @media (max-width:820px) {
+      #field {
+          /* ~12% smaller than the natural mobile size (100% / 46vh) */
+          width: min(88%, 40.5vh);
+          margin: 0 auto;
+      }
+  }
+
   #legend {
       display: flex;
       flex-wrap: wrap;
@@ -838,6 +841,14 @@
       border-color: var(--line);
       color: var(--paper-dim);
       font-size: 11px;
+  }
+
+  @media (max-width:820px) {
+
+      .action-btns button.act,
+      .action-btns button.act.ghost {
+          font-size: 10px;
+      }
   }
 
   .meter {
