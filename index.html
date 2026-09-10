@@ -79,18 +79,12 @@
             </div>
         </div>
 
-        <!-- mobile-only: Lineup / Stage Key / Your Day / Don't Miss / Legend / Video share one swipeable
-             carousel instead of stacking; on desktop this stays empty and hidden — those panels live in
-             their normal spots below instead (moved there and back by JS as the viewport crosses the breakpoint) -->
+        <!-- mobile-only: Lineup / Controls / Stage Key / Your Day / Don't Miss / Legend / Video share one
+             swipeable carousel instead of stacking; on desktop this stays empty and hidden — those panels
+             live in their normal spots below instead (moved there and back by JS as the viewport crosses
+             the breakpoint). The tab strip is fixed to the bottom of the screen (see CSS) so it stays
+             reachable regardless of scroll position, with the carousel content above it. -->
         <div id="mobile-carousel">
-            <div class="carousel-tabs" id="carousel-tabs">
-                <button type="button" class="active">Lineup</button>
-                <button type="button">Stages</button>
-                <button type="button">Your Day</button>
-                <button type="button">Don't Miss</button>
-                <button type="button">Legend</button>
-                <button type="button">Video</button>
-            </div>
             <div class="carousel-track" id="carousel-track">
                 <div class="carousel-page"></div>
                 <div class="carousel-page"></div>
@@ -98,7 +92,18 @@
                 <div class="carousel-page"></div>
                 <div class="carousel-page"></div>
                 <div class="carousel-page"></div>
+                <div class="carousel-page"></div>
             </div>
+        </div>
+
+        <div class="carousel-tabs" id="carousel-tabs">
+            <button type="button" class="active">Lineup</button>
+            <button type="button">Controls</button>
+            <button type="button">Stages</button>
+            <button type="button">Your Day</button>
+            <button type="button">Don't Miss</button>
+            <button type="button">Legend</button>
+            <button type="button">Video</button>
         </div>
 
         <div class="panel" id="timeline-panel">
@@ -191,14 +196,16 @@
         (function () {
             "use strict";
 
-            // Lineup, Stage Key, Your Day, Don't Miss, Legend and Video live in their normal desktop spots
-            // by default; on mobile they're moved wholesale (not cloned — keeps every id/handler intact)
-            // into one swipeable carousel instead, and moved back any time the viewport crosses back.
+            // Lineup, Controls, Stage Key, Your Day, Don't Miss, Legend and Video live in their normal
+            // desktop spots by default; on mobile they're moved wholesale (not cloned — keeps every
+            // id/handler intact) into one swipeable carousel instead, and moved back any time the
+            // viewport crosses back.
             (function initMobileCarousel() {
                 const layout = document.querySelector(".layout");
                 const keyCol = document.querySelector(".key-col");
                 const sideCol = document.getElementById("side-col");
                 const timelinePanel = document.getElementById("timeline-panel");
+                const controlsRow = document.querySelector(".key-col .controls-row");
                 const stageKey = document.getElementById("stage-key");
                 const yourDayPanel = document.getElementById("panel-yourday");
                 const dontMissPanel = document.getElementById("panel-dontmiss");
@@ -206,7 +213,7 @@
                 const videoPanel = document.getElementById("video-panel");
 
                 const track = document.getElementById("carousel-track");
-                const pages = Array.from(track.children); // order: lineup, stages, your day, don't miss, legend, video
+                const pages = Array.from(track.children); // order: lineup, controls, stages, your day, don't miss, legend, video
                 const tabs = Array.from(document.querySelectorAll("#carousel-tabs button"));
 
                 function setActiveTab(i) {
@@ -235,16 +242,18 @@
                 const sync = () => {
                     if (mobileMQ.matches) {
                         pages[0].appendChild(timelinePanel);
-                        pages[1].appendChild(stageKey);
-                        pages[2].appendChild(yourDayPanel);
-                        pages[3].appendChild(dontMissPanel);
-                        pages[4].appendChild(legendPanel);
-                        pages[5].appendChild(videoPanel);
+                        pages[1].appendChild(controlsRow);
+                        pages[2].appendChild(stageKey);
+                        pages[3].appendChild(yourDayPanel);
+                        pages[4].appendChild(dontMissPanel);
+                        pages[5].appendChild(legendPanel);
+                        pages[6].appendChild(videoPanel);
                         track.scrollLeft = 0; // Lineup shows first every time the carousel (re)activates
                         setActiveTab(0);
                     } else {
                         layout.insertBefore(timelinePanel, sideCol);
                         keyCol.insertBefore(stageKey, keyCol.firstChild);
+                        keyCol.appendChild(controlsRow);
                         sideCol.appendChild(yourDayPanel);
                         sideCol.appendChild(dontMissPanel);
                         sideCol.appendChild(legendPanel);
@@ -1240,6 +1249,7 @@
             }
 
             function drawField() {
+                if (!G) return; // an obstacle image can finish loading before the first day starts
                 drawFieldOn(ctx, canvas, G.grid, G.entrance, G.stages, G.obstacleIcons, G.path, G.player, G.bars, G.toilets, G.merchStands, G.coinPickups, G.coins, nowPlayingSetFor(), G.time, G.milkPickup, G.crowdSurfPickup);
             }
 
