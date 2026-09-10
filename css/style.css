@@ -137,18 +137,36 @@
       min-width: 0;
   }
 
+  /* mobile-only carousel slot; empty and hidden above the breakpoint — see #mobile-carousel below */
+  #mobile-carousel {
+      display: none;
+  }
+
   @media (max-width:820px) {
       .layout {
           grid-template-columns: 1fr;
           grid-template-areas:
               "canvas"
-              "timeline"
-              "sidebar"
+              "carousel"
               "video";
       }
 
-      #timeline-panel {
-          padding: 10px;
+      #mobile-carousel {
+          display: block;
+          grid-area: carousel;
+          min-width: 0;
+      }
+
+      /* their content lives in the carousel instead, on mobile — but #timeline-panel itself gets
+         moved INTO the carousel by JS, so it needs re-showing once it's there (ID selector alone
+         can't tell "in its desktop spot" from "relocated", so the override has to out-specificity it) */
+      #timeline-panel,
+      #side-col {
+          display: none;
+      }
+
+      #mobile-carousel #timeline-panel {
+          display: block;
       }
 
       #field {
@@ -182,67 +200,88 @@
       background: var(--line);
   }
 
-  /* ---------- accordion panels: plain always-open panels above the breakpoint, real collapsible accordions on mobile ---------- */
   #side-col>*+* {
       margin-top: 14px;
   }
 
-  .accordion>summary {
-      font-family: 'Oswald', sans-serif;
-      text-transform: uppercase;
-      font-size: 13px;
-      letter-spacing: 1.5px;
-      margin: 0;
-      color: var(--paper-dim);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      list-style: none;
-      cursor: default;
-      pointer-events: none;
+  /* ---------- mobile swipeable carousel: Stage Key / Lineup / Your Day / Don't Miss / Legend share one slot ---------- */
+  @media (max-width:820px) {
+      #mobile-carousel {
+          background: var(--panel);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          padding: 10px;
+      }
+
+      /* the moved-in panels' own chrome would double up with the carousel card's — strip it */
+      #mobile-carousel .panel {
+          background: none;
+          border: none;
+          border-radius: 0;
+          padding: 0;
+      }
+
+      /* stage-key has no chrome of its own on desktop (it just sits in the arena panel) — give it
+         the same card treatment as the other pages once it's a carousel page on its own */
+      #mobile-carousel #stage-key {
+          background: var(--panel-2);
+          border: 1px solid var(--line);
+          border-radius: 4px;
+          padding: 10px;
+      }
   }
 
-  .accordion>summary::-webkit-details-marker {
+  .carousel-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+  }
+
+  .carousel-tabs::-webkit-scrollbar {
       display: none;
   }
 
-  .accordion>summary .rule {
-      flex: 1;
-      height: 1px;
-      background: var(--line);
+  .carousel-tabs button {
+      flex: 0 0 auto;
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: .5px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--paper-dim);
+      cursor: pointer;
+      white-space: nowrap;
   }
 
-  .accordion>summary::after {
-      content: '';
+  .carousel-tabs button.active {
+      border-color: var(--stone);
+      color: var(--paper);
+      background: var(--ink);
   }
 
-  .accordion>.accordion-body {
-      display: block;
-      margin-top: 10px;
+  .carousel-track {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
   }
 
-  @media (max-width:820px) {
-      .accordion>summary {
-          cursor: pointer;
-          pointer-events: auto;
-      }
+  .carousel-track::-webkit-scrollbar {
+      display: none;
+  }
 
-      .accordion>summary::after {
-          content: '▸';
-          font-size: 10px;
-          color: var(--paper-dim);
-          margin-left: 4px;
-          display: inline-block;
-          transition: transform .15s ease;
-      }
-
-      .accordion[open]>summary::after {
-          transform: rotate(90deg);
-      }
-
-      .accordion>.accordion-body {
-          display: revert;
-      }
+  .carousel-page {
+      flex: 0 0 100%;
+      min-width: 0;
+      scroll-snap-align: start;
+      max-height: 60vh;
+      overflow-y: auto;
   }
 
   /* ---------- Street-Fighter style vitals HUD ---------- */
